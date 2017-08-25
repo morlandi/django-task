@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-from django.conf.urls import url
-from django.views.generic import TemplateView
+from django.conf.urls import include, url
+from django.contrib import admin
+from .views import tasks_info_api
 
-from . import views
 
 urlpatterns = [
-    url(r'', TemplateView.as_view(template_name="base.html")),
-    ]
+    url(r'^info/$', tasks_info_api, name="django_task_info"),
+]

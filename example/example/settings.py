@@ -36,7 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_rq',
     'django_task',
+    'example',
 
     # if your app has other dependencies that need to be added to the site
     # they should be added here
@@ -118,3 +120,38 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#
+# RQ config
+#
+
+REDIS_URL = 'redis://localhost:6379/0'
+#RQ_PREFIX = "myrq_"
+RQ_PREFIX = ""
+QUEUE_DEFAULT = RQ_PREFIX + 'default'
+QUEUE_HIGH = RQ_PREFIX + 'high'
+QUEUE_LOW = RQ_PREFIX + 'low'
+#QUEUE_SCHEDULED = RQ_PREFIX + 'scheduled'
+
+RQ_QUEUES = {
+    QUEUE_DEFAULT: {
+        'URL': REDIS_URL,
+        #'PASSWORD': 'some-password',
+        'DEFAULT_TIMEOUT': 360,
+    },
+    QUEUE_HIGH: {
+        'URL': REDIS_URL,
+        'DEFAULT_TIMEOUT': 500,
+    },
+    QUEUE_LOW: {
+        'URL': REDIS_URL,
+        #'ASYNC': False,
+    },
+    # QUEUE_SCHEDULED: {
+    #     'URL': REDIS_URL,
+    # },
+}
+
+RQ_SHOW_ADMIN_LINK = False
+#TASKLOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
+TASKLOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'protected', 'tasklog'))

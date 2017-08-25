@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.shortcuts import redirect
 
 
 urlpatterns = [
+    url(r'^$', lambda x: redirect('/admin/')),
     url(r'^admin/', admin.site.urls),
-    url(r'', include('django_task.urls', namespace='django_task')),
+    url(r'^django_task/', include('django_task.urls', namespace='django_task')),
 ]

@@ -1,0 +1,22 @@
+
+.task_status {
+    background: transparent url("/static/img/django_task/icon-question.gif") no-repeat 0 3px;
+    padding-left: 16px;
+}
+
+.task_status[data-task-status="PENDING"]  { background-image: url("/static/img/django_task/icon-clock.gif"); }
+
+.task_status[data-task-status="PENDING"]  { background-image: url("/static/img/django_task/icon-clock.gif"); }
+.task_status[data-task-status="RETRY"]    { background-image: url("/static/img/django_task/icon-clock.gif"); }
+
+.task_status[data-task-status="RECEIVED"] { background-image: url("/static/img/django_task/icon-spinner.gif"); }
+.task_status[data-task-status="STARTED"]  { background-image: url("/static/img/django_task/icon-spinner.gif"); }
+.task_status[data-task-status="PROGRESS"] { background-image: url("/static/img/django_task/icon-spinner.gif"); }
+.task_status[data-task-status="RUNNING"]  { background-image: url("/static/img/django_task/icon-spinner.gif"); }
+
+.task_status[data-task-status="SUCCESS"]  { background-image: url("/static/img/django_task/icon-yes.gif"); }
+
+.task_status[data-task-status="FAILURE"]  { background-image: url("/static/img/django_task/icon-no.gif"); }
+.task_status[data-task-status="REVOKED"]  { background-image: url("/static/img/django_task/icon-no.gif"); }
+.task_status[data-task-status="REJECTED"] { background-image: url("/static/img/django_task/icon-no.gif"); }
+.task_status[data-task-status="IGNORED"]  { background-image: url("/static/img/django_task/icon-no.gif"); }
