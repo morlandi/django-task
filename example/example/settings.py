@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_rq',
+    #'django_task.apps.DjangoTaskConfig',
     'django_task',
     'example',
 
@@ -152,6 +153,6 @@ RQ_QUEUES = {
     # },
 }
 
-RQ_SHOW_ADMIN_LINK = False
+RQ_SHOW_ADMIN_LINK = True
 #TASKLOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
 TASKLOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'protected', 'tasklog'))

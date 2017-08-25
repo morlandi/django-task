@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^$', lambda x: redirect('/admin/')),
     url(r'^admin/', admin.site.urls),
     url(r'^django_task/', include('django_task.urls', namespace='django_task')),
+    url(r'^django-rq/', include('django_rq.urls')),
 ]
