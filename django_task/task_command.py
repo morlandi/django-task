@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 import django_rq
 
 
@@ -53,6 +54,6 @@ class TaskCommand(BaseCommand):
                 job = job_func.delay(**params)
 
         except Exception as e:
-            raise CommandError('ERROR: %s' % str(e))
+            raise CommandError('[%s] ERROR: %s' % (timezone.now().isoformat(), str(e)))
 
-        self.stdout.write('%s scheduled (job=%s)' % (TaskClass.__name__, job.get_id()))
+        self.stdout.write('[%s] %s scheduled (job=%s)' % (timezone.now().isoformat(), TaskClass.__name__, job.get_id()))
