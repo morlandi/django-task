@@ -46,6 +46,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='django-task',
+    version='0.1.0',
     version=version,
     description="""A Django app to run new background tasks from either admin or cron, and inspect task history from admin""",
     long_description=readme + '\n\n' + history,
