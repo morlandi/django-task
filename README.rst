@@ -194,8 +194,11 @@ for example:
 
         def handle(self, *args, **options):
             from tasks.models import CountBeansTask
-            from tasks.jobs import count_beans
-            self.run_task(CountBeansTask, count_beans, **options)
+            self.run_task(CountBeansTask, **options)
+
+            # or:
+            # from tasks.jobs import count_beans
+            # self.run_job(CountBeansTask, count_beans, **options)
 
 
 Screenshots
