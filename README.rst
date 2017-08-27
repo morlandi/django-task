@@ -79,7 +79,7 @@ Features
     - Before execution, each job will either recover or create a corresponding tasks
     - During execution, the job can notify the state and progress to the app
       by calling Task.set_state() and Task.set_progress()
-    - See tasks.jobs.count_beans for an example
+    - See example.jobs.count_beans for an example
 
 **Execute**
 
@@ -146,7 +146,7 @@ then:
 
 .. code:: python
 
-    from tasks.jobs import count_beans
+    from .jobs import count_beans
 
     count_beans.delay(num_beans=1000)
 
@@ -155,7 +155,7 @@ or, for finer control:
 .. code:: python
 
     import django_rq
-    from tasks.jobs import count_beans
+    from .jobs import count_beans
 
     queue = django_rq.get_queue('high')
     queue.enqueue(count_beans, num_beans=1000)
@@ -183,7 +183,7 @@ for example:
 
 .. code:: python
 
-    from tasks.task_command import TaskCommand
+    from django_task.task_command import TaskCommand
 
 
     class Command(TaskCommand):
