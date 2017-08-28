@@ -4,3 +4,6 @@
 * New TaskCommand.run_task() creates a Task, then runs it;
   this guarantees that something is traced even when background job will fail
 
+0.1.3
+-----
+* Polymorphic behaviour or Task.get_child() restored
