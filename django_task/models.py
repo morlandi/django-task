@@ -80,7 +80,8 @@ class Task(models.Model):
         #   http://lazypython.blogspot.it/2008/12/playing-with-polymorphism-in-django.html
         """
 
-        from django.db.models.fields.reverse_related import OneToOneRel
+        #from django.db.models.fields.reverse_related import OneToOneRel
+        from django.db.models.fields.related import OneToOneRel
         child = self
         for f in self._meta.get_all_field_names():
             field = self._meta.get_field_by_name(f)[0]

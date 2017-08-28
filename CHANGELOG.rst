@@ -7,3 +7,7 @@
 0.1.3
 -----
 * Polymorphic behaviour or Task.get_child() restored
+
+0.1.4
+-----
+* Fix OneToOneRel import for Django < 1.9
