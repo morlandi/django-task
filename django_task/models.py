@@ -73,9 +73,24 @@ class Task(models.Model):
         return str(self.id)
 
     def get_child(self):
+        """
+        Return instance of the derived model from base class.
 
-        # TODO: rethink
-        return self
+        # Adapted from:
+        #   http://lazypython.blogspot.it/2008/12/playing-with-polymorphism-in-django.html
+        """
+
+        from django.db.models.fields.reverse_related import OneToOneRel
+        child = self
+        for f in self._meta.get_all_field_names():
+            field = self._meta.get_field_by_name(f)[0]
+            if isinstance(field, OneToOneRel) and field.field.primary_key:
+                try:
+                    child = getattr(self, field.get_accessor_name())
+                    break
+                except field.model.DoesNotExist:
+                    pass
+        return child
 
         """
         Retrieve derived class from base class;
@@ -88,8 +103,8 @@ class Task(models.Model):
         #     return self.countbeanstask
         # if hasattr(self, 'sendemailtask'):
         #     return self.sendemailtask
-        raise Exception("Task:get_child() couldn't recognize derived class")
-        return self
+        #raise Exception("Task:get_child() couldn't recognize derived class")
+        #return self
 
     def as_dict(self):
         return {
@@ -105,6 +120,7 @@ class Task(models.Model):
             'job_id': self.job_id,
             'status': self.status,
             'status_display': self.status_display(),
+            'failure_reason': self.failure_reason,
             'progress': self.progress,
             'progress_display': self.progress_display(),
             'completed': self.check_status_complete(),
