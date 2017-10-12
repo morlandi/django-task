@@ -31,7 +31,11 @@ def format_datetime(dt, include_time=True):
         return ''
 
     # convert to localtime
-    dt = timezone.localtime(dt)
+    try:
+        dt = timezone.localtime(dt)
+    except ValueError:
+        # Probably 'astimezone() cannot be applied to a naive datetime'
+        pass
 
     text = formats.date_format(dt, use_l10n=True, format='SHORT_DATE_FORMAT')
     if include_time:

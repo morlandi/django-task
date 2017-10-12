@@ -83,8 +83,18 @@ class Task(models.Model):
         #from django.db.models.fields.reverse_related import OneToOneRel
         from django.db.models.fields.related import OneToOneRel
         child = self
-        for f in self._meta.get_all_field_names():
-            field = self._meta.get_field_by_name(f)[0]
+
+        # Fixes for Django 1.10
+        # https://docs.djangoproject.com/en/1.9/ref/models/meta/#migrating-from-the-old-api
+        # Removed in 1.10 many _meta functions as part of the "formalization of the Model._meta api:
+        # - get_all_field_names
+        # - get_field_by_name
+
+        # for f in self._meta.get_all_field_names():
+        #     field = self._meta.get_field_by_name(f)[0]
+        #     ...
+        for name in [f.name for f in self._meta.get_fields()]:
+            field = self._meta.get_field(name)
             if isinstance(field, OneToOneRel) and field.field.primary_key:
                 try:
                     child = getattr(self, field.get_accessor_name())

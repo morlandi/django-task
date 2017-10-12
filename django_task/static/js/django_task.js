@@ -1,7 +1,8 @@
 (function($) {
 
     $(document).ready(function() {
-        if ($('body').hasClass('change-list')) {
+        var body = $('body');
+        if (body.hasClass('change-list') || body.hasClass('grp-change-list')) {
             update_tasks(1000);
         }
     });
