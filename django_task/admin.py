@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import traceback
 import os
 import mimetypes
@@ -42,6 +43,24 @@ class TaskAdmin(admin.ModelAdmin):
         if self.model._meta.model_name == 'task':
             return self.list_display + ['model_name_display', ]
         return self.list_display
+
+    def get_fieldsets(self, request, obj=None):
+        fields = super(TaskAdmin, self).get_fieldsets(request, obj)[0][1]['fields']
+        base_fieldnames = [f.name for f in Task._meta.get_fields()]
+        primary_fields = [f for f in fields if f not in base_fieldnames]
+        secondary_fields = [f for f in fields if f not in primary_fields]
+        fieldsets = [
+            (None, {'fields': primary_fields}),
+            (_('Task Details'), {'fields': secondary_fields})
+        ]
+        return fieldsets
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super(TaskAdmin, self).get_readonly_fields(request, obj)
+        if obj:
+            # Do not modify already existing tasks
+            return readonly_fields + obj.retrieve_param_names()
+        return readonly_fields
 
     def model_name_display(self, obj):
         try:
