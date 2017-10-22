@@ -3,6 +3,11 @@
 History
 =======
 
+0.1.6
+-----
+* Improved ui for TaskAdmin
+* Fix unicode literals for Python3
+
 0.1.5
 -----
 * fixes for Django 1.10
