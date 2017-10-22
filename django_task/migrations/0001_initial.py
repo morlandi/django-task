@@ -20,13 +20,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Task',
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True, verbose_name=b'id')),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True, verbose_name='id')),
                 ('created_on', models.DateTimeField(auto_now_add=True, verbose_name='created on')),
                 ('started_on', models.DateTimeField(null=True, verbose_name='started on')),
                 ('completed_on', models.DateTimeField(null=True, verbose_name='completed on')),
                 ('verbosity', models.IntegerField(blank=True, default=None, null=True, verbose_name='verbosity')),
                 ('job_id', models.CharField(blank=True, max_length=128, verbose_name='job id')),
-                ('status', models.CharField(choices=[(b'PENDING', b'PENDING'), (b'RECEIVED', b'RECEIVED'), (b'STARTED', b'STARTED'), (b'PROGESS', b'PROGESS'), (b'SUCCESS', b'SUCCESS'), (b'FAILURE', b'FAILURE'), (b'REVOKED', b'REVOKED'), (b'REJECTED', b'REJECTED'), (b'RETRY', b'RETRY'), (b'IGNORED', b'IGNORED'), (b'REJECTED', b'REJECTED')], db_index=True, default=b'PENDING', max_length=128, verbose_name='status')),
+                ('status', models.CharField(choices=[('PENDING', 'PENDING'), ('RECEIVED', 'RECEIVED'), ('STARTED', 'STARTED'), ('PROGESS', 'PROGESS'), ('SUCCESS', 'SUCCESS'), ('FAILURE', 'FAILURE'), ('REVOKED', 'REVOKED'), ('REJECTED', 'REJECTED'), ('RETRY', 'RETRY'), ('IGNORED', 'IGNORED'), ('REJECTED', 'REJECTED')], db_index=True, default='PENDING', max_length=128, verbose_name='status')),
                 ('failure_reason', models.CharField(blank=True, max_length=256, verbose_name='failure reason')),
                 ('progress', models.IntegerField(blank=True, null=True, verbose_name='progress')),
                 ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
