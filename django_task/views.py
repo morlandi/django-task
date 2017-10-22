@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from __future__ import unicode_literals
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.core import serializers

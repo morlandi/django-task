@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 import django_rq
