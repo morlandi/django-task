@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 ## Moved to "example" app
 
 
@@ -85,3 +84,4 @@ from __future__ import unicode_literals
 #     finally:
 #         if task:
 #             task.set_status(result, failure_reason)
+
