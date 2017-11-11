@@ -9,6 +9,12 @@
 
     var update_tasks_timer = null;
 
+    function getCookie(name) {
+        var value = '; ' + document.cookie,
+            parts = value.split('; ' + name + '=');
+        if (parts.length == 2) return parts.pop().split(';').shift();
+    }
+
     function update_tasks(autorepeat_interval) {
 
         console.log('update_tasks() ...');
@@ -31,10 +37,10 @@
                 data: {'ids[]': incomplete_task_ids},
                 cache: false,
                 crossDomain: true,
-                type: 'get',
+                type: 'post',
                 dataType: 'json',
-                contentType: 'application/json; charset=utf-8'
-                //,headers: {"X-CSRFToken": getCookie('csrftoken')}
+                //contentType: 'application/json; charset=utf-8',
+                headers: {"X-CSRFToken": getCookie('csrftoken')}
             }).done(function(data) {
                 var repeat = false;
                 $.each(data, function(index, item) {

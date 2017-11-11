@@ -12,7 +12,10 @@ def tasks_info_api(request):
     # if not request.is_ajax():
     #     raise PermissionDenied
     try:
-        ids = request.GET.getlist('ids[]')
+        # Accept iether GET or POST
+        if not getattr(request, 'REQUEST', None):
+            request.REQUEST = request.GET if request.method=='GET' else request.POST
+        ids = request.REQUEST.getlist('ids[]')
         tasks = Task.objects.filter(id__in=ids)
         json_response = [task.get_child().as_dict() for task in tasks]
         response_status = 200
