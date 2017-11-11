@@ -3,6 +3,10 @@
 History
 =======
 
+0.1.7
+-----
+* javascript: use POST to retrieve tasks state for UI update to prevent URL length limit exceed
+
 0.1.6
 -----
 * Improved ui for TaskAdmin
