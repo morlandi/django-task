@@ -13,13 +13,6 @@ Django Task
 
 A Django app to run new background tasks from either admin or cron, and inspect task history from admin
 
-Documentation
--------------
-
-* TODO
-
-The full documentation is at https://django-task.readthedocs.io.
-
 Quickstart
 ----------
 
@@ -53,9 +46,9 @@ Features
 
 **Purposes**
 
-- create async tasks programmatically
-- create and monitor async tasks from admin
-- log all tasks in the database for later inspection
+    - create async tasks programmatically
+    - create and monitor async tasks from admin
+    - log all tasks in the database for later inspection
 
 **Details**
 
@@ -70,15 +63,14 @@ Features
 
     - creating a Task from the Django admin
     - creating a Task from code, then calling Task.run()
-    - scheduling directly the executio of a job; i.e.: count_beans.delay(100)
 
-    In the latter case, a new Task is automatically created by the job for logging purposes.
+3. job execution workflow:
 
-3. job responsibilities (optional):
-
-    - Before execution, each job will either recover or create a corresponding tasks
-    - During execution, the job can notify the state and progress to the app
-      by calling Task.set_state() and Task.set_progress()
+    - job execution is triggered by task.run(async)
+    - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
+    - on start, job will update task status to 'STARTED' and save job.id for reference
+    - during execution, the job can update the progress indicator
+    - on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
     - See example.jobs.count_beans for an example
 
 **Execute**
@@ -136,30 +128,6 @@ then run worker as follows:
 
     python manage.py rqworker primary_default
 
-**Howto run jobs programmatically**
-
-.. code:: bash
-
-    python manage.py shell
-
-then:
-
-.. code:: python
-
-    from .jobs import count_beans
-
-    count_beans.delay(num_beans=1000)
-
-or, for finer control:
-
-.. code:: python
-
-    import django_rq
-    from .jobs import count_beans
-
-    queue = django_rq.get_queue('high')
-    queue.enqueue(count_beans, num_beans=1000)
-
 **Howto schedule jobs with cron**
 
 Call management command 'count_beans', which in turn executes the required job.
@@ -195,11 +163,6 @@ for example:
         def handle(self, *args, **options):
             from tasks.models import CountBeansTask
             self.run_task(CountBeansTask, **options)
-
-            # or:
-            # from tasks.jobs import count_beans
-            # self.run_job(CountBeansTask, count_beans, **options)
-
 
 Screenshots
 -----------

@@ -10,7 +10,7 @@ from django_rq import job
 
 
 @job(CountBeansTask.TASK_QUEUE)
-def count_beans(**kwargs):
+def count_beans(task_id):
 
     task = None
     result = 'SUCCESS'
@@ -21,9 +21,8 @@ def count_beans(**kwargs):
         # this raises a "Could not resolve a Redis connection" exception in sync mode
         #job = get_current_job()
         job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
-
-        task, created = CountBeansTask.objects.get_or_create(job_id=job.get_id(), **kwargs)
-        task.set_status('STARTED')
+        task = CountBeansTask.objects.get(id=task_id)
+        task.set_status(status='STARTED', job_id=job.get_id())
 
         params = task.retrieve_params_as_dict()
         num_beans = params['num_beans']
@@ -31,7 +30,6 @@ def count_beans(**kwargs):
         for i in range(0, num_beans):
             time.sleep(0.01)
             task.set_progress((i + 1) * 100 / num_beans, step=10)
-        #task.set_status('SUCCESS')
 
     except Exception as e:
         if task:
@@ -41,11 +39,11 @@ def count_beans(**kwargs):
 
     finally:
         if task:
-            task.set_status(result, failure_reason)
+            task.set_status(status=result, failure_reason=failure_reason)
 
 
 @job(SendEmailTask.TASK_QUEUE)
-def send_email(**kwargs):
+def send_email(task_id):
 
     task = None
     result = 'SUCCESS'
@@ -56,9 +54,8 @@ def send_email(**kwargs):
         # this raises a "Could not resolve a Redis connection" exception in sync mode
         #job = get_current_job()
         job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
-
-        task, created = SendEmailTask.objects.get_or_create(job_id=job.get_id(), **kwargs)
-        task.set_status('STARTED')
+        task = SendEmailTask.objects.get(id=task_id)
+        task.set_status(status='STARTED', job_id=job.get_id())
 
         params = task.retrieve_params_as_dict()
 
@@ -70,8 +67,6 @@ def send_email(**kwargs):
         from django.core.mail import send_mail
         send_mail(subject, message, sender, recipient_list)
 
-        #task.set_status('SUCCESS')
-
     except Exception as e:
         if task:
             task.log(logging.ERROR, str(e))
@@ -80,4 +75,4 @@ def send_email(**kwargs):
 
     finally:
         if task:
-            task.set_status(result, failure_reason)
+            task.set_status(status=result, failure_reason=failure_reason)

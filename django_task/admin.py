@@ -51,8 +51,13 @@ class TaskAdmin(admin.ModelAdmin):
         secondary_fields = [f for f in fields if f not in primary_fields]
         fieldsets = [
             (None, {'fields': primary_fields}),
-            (_('Task Details'), {'fields': secondary_fields})
         ]
+
+        if obj is not None:
+            fieldsets.append(
+                (_('Task Details'), {'fields': secondary_fields})
+            )
+
         return fieldsets
 
     def get_readonly_fields(self, request, obj=None):
@@ -113,10 +118,10 @@ class TaskAdmin(admin.ModelAdmin):
         ]
         return my_urls + urls
 
-    def run(self, request, object_id):
+    def run(self, object_id, request):
         try:
             obj = get_object_by_uuid_or_404(self.model, object_id)
-            job = obj.run(request, async=True)
+            job = obj.run(async=True, request=request)
             messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (object_id, job.get_id()))
         except Exception as e:
             messages.error(request, str(e))
@@ -130,7 +135,7 @@ class TaskAdmin(admin.ModelAdmin):
             source_obj = get_object_by_uuid_or_404(self.model, object_id)
             clone = source_obj.clone(request)
             #messages.info(request, _('Task "%s" cloned to "%s"') % (source_obj.id, clone.id))
-            job = clone.run(request, async=True)
+            job = clone.run(async=True, request=request)
             messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (clone.id, job.get_id()))
         except Exception as e:
             messages.error(request, str(e))
@@ -164,13 +169,12 @@ class TaskAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         super(TaskAdmin, self).save_model(request, obj, form, change)
-        self.run(request, str(obj.id))
+        self.run(str(obj.id), request)
 
     def has_add_permission(self, request):
         if self.model._meta.model_name == 'task':
             return False
         return super(TaskAdmin, self).has_add_permission(request)
-
 
 ################################################################################
 #  Moved to "example" app

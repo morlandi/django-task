@@ -184,10 +184,14 @@ class Task(models.Model):
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
     duration_display.fget.short_description = _('duration')
 
-    def set_status(self, status, failure_reason=None, commit=True):
+    def set_status(self, status, job_id=None, failure_reason=None, commit=True):
 
         update_fields = ['status', ]
         self.status = status
+
+        if job_id is not None:
+            self.job_id = job_id
+            update_fields.append('job_id')
 
         if status in ['STARTED', ]:
             self.started_on = timezone.make_aware(datetime.datetime.now())
@@ -297,9 +301,17 @@ class Task(models.Model):
     ############################################################################
     # Job execution
 
-    def start_job(self, request):
+    # def start_job(self, request):
+    #     """
+    #     To be overridden calling the specific job
+    #     """
+    #     pass
+
+    @staticmethod
+    def get_jobfunc():
         """
-        To be overridden calling the specific job
+        To be overridden supplying a specific job func.
+        TODO: use job registry instead ?
         """
         pass
 
@@ -317,7 +329,7 @@ class Task(models.Model):
         if len(workers) <= 0:
             raise Exception('%s "%s"' % (_('No active workers for queue'), self.TASK_QUEUE))
 
-    def run(self, request, async):
+    def run(self, async, request=None):
 
         if self.job_id:
             raise Exception('already scheduled for execution')
@@ -325,13 +337,15 @@ class Task(models.Model):
         #self.check_worker_active_for_queue() !!!
 
         job = None
+        jobfunc = self.get_jobfunc()
         if async:
-            job = self.start_job(request)
+            job = jobfunc.delay(self.id)
         else:
-            raise Exception('TODO: sync call')
+            queue = django_rq.get_queue(self.TASK_QUEUE, async=False)
+            job = queue.enqueue(jobfunc, self.id)
 
-        self.job_id = job.id if job else None
-        self.save(update_fields=['job_id'])
+        # self.job_id = job.id if job else None
+        # self.save(update_fields=['job_id'])
         return job
 
     @classmethod

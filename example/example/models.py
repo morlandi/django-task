@@ -12,10 +12,15 @@ class CountBeansTask(Task):
     TASK_QUEUE = settings.QUEUE_DEFAULT
     DEFAULT_VERBOSITY = 2
 
-    def start_job(self, request):
+    # def start_job(self, request):
+    #     from .jobs import count_beans
+    #     #return count_beans.delay(**self.retrieve_params_as_dict())
+    #     return count_beans.delay()
+
+    @staticmethod
+    def get_jobfunc():
         from .jobs import count_beans
-        #return count_beans.delay(**self.retrieve_params_as_dict())
-        return count_beans.delay()
+        return count_beans
 
 
 class SendEmailTask(Task):
@@ -29,7 +34,12 @@ class SendEmailTask(Task):
     TASK_QUEUE = settings.QUEUE_LOW
     DEFAULT_VERBOSITY = 2
 
-    def start_job(self, request):
+    # def start_job(self, request):
+    #     from .jobs import send_email
+    #     #return count_beans.delay(**self.retrieve_params_as_dict())
+    #     return send_email.delay()
+
+    @staticmethod
+    def get_jobfunc():
         from .jobs import send_email
-        #return count_beans.delay(**self.retrieve_params_as_dict())
-        return send_email.delay()
+        return send_email

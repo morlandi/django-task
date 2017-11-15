@@ -3,6 +3,11 @@
 History
 =======
 
+0.1.8
+-----
+* always start job from task.run() to prevent any possible race condition
+* task.run(async) can now accept async=False
+
 0.1.7
 -----
 * javascript: use POST to retrieve tasks state for UI update to prevent URL length limit exceed
