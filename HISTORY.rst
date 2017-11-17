@@ -3,6 +3,10 @@
 History
 =======
 
+0.1.9
+-----
+* app settings
+
 0.1.8
 -----
 * always start job from task.run() to prevent any possible race condition

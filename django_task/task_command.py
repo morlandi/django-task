@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import distutils
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 import django_rq
@@ -12,6 +13,7 @@ class TaskCommand(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--queue', '-Q', default='', help='The queue to work on')
+        parser.add_argument('--sync', action="store_true", default=False, help='Run task synchronously')
 
     # def run_job(self, TaskClass, job_func, **options):
     #     try:
@@ -38,7 +40,8 @@ class TaskCommand(BaseCommand):
             param_names = TaskClass.retrieve_param_names()
             params = dict([item for item in options.items() if item[0] in param_names])
             task = TaskClass.objects.create(**params)
-            task.run(async=True)
+            async = not options.get('sync')
+            task.run(async=async)
         except Exception as e:
             raise CommandError('[%s] ERROR: %s' % (timezone.now().isoformat(), str(e)))
 

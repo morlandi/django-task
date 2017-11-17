@@ -21,6 +21,8 @@ import django_rq
 #from rq import get_current_job
 from rq import Worker, Queue
 from .utils import format_datetime
+from .app_settings import ALWAYS_EAGER
+from .app_settings import LOG_ROOT
 
 
 class Task(models.Model):
@@ -262,9 +264,11 @@ class Task(models.Model):
 
     def _logfile(self):
         # Make sure path exists
-        if not os.path.exists(settings.TASKLOG_ROOT):
-            os.makedirs(settings.TASKLOG_ROOT)
-        return os.path.join(settings.TASKLOG_ROOT, str(self.id) + '.log')
+        if LOG_ROOT:
+            if not os.path.exists(LOG_ROOT):
+                os.makedirs(LOG_ROOT)
+            return os.path.join(LOG_ROOT, str(self.id) + '.log')
+        return None
 
     def get_logger(self, verbosity):
         """
@@ -280,9 +284,11 @@ class Task(models.Model):
 
             format_string = '%(asctime)s|%(levelname)s|%(message)s'
 
-            handler = logging.FileHandler(self._logfile(), 'w')
-            handler.setFormatter(logging.Formatter(format_string))
-            self.logger.addHandler(handler)
+            logfile = self._logfile()
+            if logfile:
+                handler = logging.FileHandler(logfile, 'w')
+                handler.setFormatter(logging.Formatter(format_string))
+                self.logger.addHandler(handler)
 
             handler = logging.StreamHandler(sys.stdout)
             handler.setFormatter(logging.Formatter('\x1b[1;33;40m%s\x1b[0m' % format_string))
@@ -315,19 +321,19 @@ class Task(models.Model):
         """
         pass
 
-    def check_worker_active_for_queue(self):
+    # def check_worker_active_for_queue(self):
 
-        #
-        # TODO: copied from sample project; verify
-        #
+    #     #
+    #     # TODO: copied from sample project; verify
+    #     #
 
-        redis_connection = django_rq.get_connection(self.TASK_QUEUE)
-        # ???
-        #if len([x for x in Worker.all(connection=redis_conn) if settings.DJANGO_TEST_RQ_LOW_QUEUE in x.queue_names()]) == 0:
-        #     messages.add_message(self.request, messages.ERROR, )
-        workers = [worker for worker in Worker.all(connection=redis_connection) if self.TASK_QUEUE in worker.queue_names()]
-        if len(workers) <= 0:
-            raise Exception('%s "%s"' % (_('No active workers for queue'), self.TASK_QUEUE))
+    #     redis_connection = django_rq.get_connection(self.TASK_QUEUE)
+    #     # ???
+    #     #if len([x for x in Worker.all(connection=redis_conn) if settings.DJANGO_TEST_RQ_LOW_QUEUE in x.queue_names()]) == 0:
+    #     #     messages.add_message(self.request, messages.ERROR, )
+    #     workers = [worker for worker in Worker.all(connection=redis_connection) if self.TASK_QUEUE in worker.queue_names()]
+    #     if len(workers) <= 0:
+    #         raise Exception('%s "%s"' % (_('No active workers for queue'), self.TASK_QUEUE))
 
     def run(self, async, request=None):
 
@@ -338,14 +344,12 @@ class Task(models.Model):
 
         job = None
         jobfunc = self.get_jobfunc()
-        if async:
-            job = jobfunc.delay(self.id)
-        else:
+        if ALWAYS_EAGER or not async:
             queue = django_rq.get_queue(self.TASK_QUEUE, async=False)
             job = queue.enqueue(jobfunc, self.id)
+        else:
+            job = jobfunc.delay(self.id)
 
-        # self.job_id = job.id if job else None
-        # self.save(update_fields=['job_id'])
         return job
 
     @classmethod

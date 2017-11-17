@@ -171,6 +171,24 @@ Screenshots
 
 .. image:: example/etc/screenshot_002.png
 
+
+App settings
+------------
+
+DJANGOTASK_LOG_ROOT
+    Path for log files.
+
+    Default: None
+
+    Example: os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
+
+DJANGOTASK_ALWAYS_EAGER
+
+    When True, all task are execute syncronously (useful for debugging and unit testing).
+
+    Default: False
+
+
 Running Tests
 -------------
 
