@@ -101,32 +101,43 @@ for example:
 
     # file "settings.py"
 
+    REDIS_URL = 'redis://localhost:6379/0'
+    ...
+
     #
     # RQ config
     #
 
-    SESSION_COOKIE_NAME = 'primary_sid'
-
-    REDIS_URL = 'redis://localhost:6379/0'
-    RQ_PREFIX = "primary_"
+    RQ_PREFIX = "myproject_"
     QUEUE_DEFAULT = RQ_PREFIX + 'default'
-    ...
+    QUEUE_HIGH = RQ_PREFIX + 'high'
+    QUEUE_LOW = RQ_PREFIX + 'low'
 
     RQ_QUEUES = {
         QUEUE_DEFAULT: {
             'URL': REDIS_URL,
+            #'PASSWORD': 'some-password',
             'DEFAULT_TIMEOUT': 360,
         },
-        ...
+        QUEUE_HIGH: {
+            'URL': REDIS_URL,
+            'DEFAULT_TIMEOUT': 500,
+        },
+        QUEUE_LOW: {
+            'URL': REDIS_URL,
+            #'ASYNC': False,
+        },
     }
 
-    RQ_SHOW_ADMIN_LINK = True
+    RQ_SHOW_ADMIN_LINK = False
+    DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
+    DJANGOTASK_ALWAYS_EAGER = False
 
 then run worker as follows:
 
 .. code:: python
 
-    python manage.py rqworker primary_default
+    python manage.py rqworker myproject_default
 
 **Howto schedule jobs with cron**
 
