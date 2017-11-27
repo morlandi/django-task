@@ -3,6 +3,10 @@
 History
 =======
 
+0.1.10
+------
+* prevent task.failure_reason overflow
+
 0.1.9
 -----
 * app settings

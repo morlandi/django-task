@@ -203,7 +203,8 @@ class Task(models.Model):
             update_fields.append('completed_on')
 
         if failure_reason is not None:
-            self.failure_reason = failure_reason
+            # truncate messate to prevent field overflow
+            self.failure_reason = failure_reason[:self._meta.get_field('failure_reason').max_length]
             update_fields.append('failure_reason')
 
         #trace('current job: %s (task: %s)' % (job.get_id(), task.id))
