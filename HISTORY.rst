@@ -3,6 +3,11 @@
 History
 =======
 
+0.1.11
+------
+* superuser can view all tasks, while other users have access to their own tasks only
+* js fix
+
 0.1.10
 ------
 * prevent task.failure_reason overflow

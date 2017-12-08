@@ -31,8 +31,17 @@ class TaskAdmin(admin.ModelAdmin):
             "js/django_task.js",
         )
 
+    def get_queryset(self, request):
+        """
+        Superuser can view all tasks, while other users have access to it's own tasks only
+        """
+        qs = super(TaskAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(created_by=request.user)
+
     list_display = ['created_on_display', 'created_by', 'started_on_display', 'completed_on_display',
-        'duration_display', 'status_display', 'progress_display', 'log_link', ]
+        'duration_display', 'status_display', 'progress_display', ]
     list_filter = ['created_on', 'started_on', 'status', ]
     date_hierarchy = 'created_on'
 
@@ -40,9 +49,13 @@ class TaskAdmin(admin.ModelAdmin):
         'status', 'failure_reason', 'progress', 'verbosity', ]
 
     def get_list_display(self, request):
+        list_display = self.list_display[:]
+        # Superuser has access to task's log
+        if request.user.is_superuser:
+            list_display.append('log_link', )
         if self.model._meta.model_name == 'task':
-            return self.list_display + ['model_name_display', ]
-        return self.list_display
+            list_display.append('model_name_display')
+        return list_display
 
     def get_fieldsets(self, request, obj=None):
         fields = super(TaskAdmin, self).get_fieldsets(request, obj)[0][1]['fields']
