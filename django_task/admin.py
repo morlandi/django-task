@@ -33,7 +33,7 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         """
-        Superuser can view all tasks, while other users have access to it's own tasks only
+        Superuser can view all tasks, while other users have access to their own tasks only
         """
         qs = super(TaskAdmin, self).get_queryset(request)
         if request.user.is_superuser:
