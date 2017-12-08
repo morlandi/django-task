@@ -66,7 +66,7 @@
     }
 
     function update_task_row(item) {
-        var row = $('#result_list .task_status[data-task-id="' + item.id + '"').closest('tr');
+        var row = $('#result_list .task_status[data-task-id="' + item.id + '"]').closest('tr');
         if (row.length) {
             $(row).find('.field-started_on_display').html(item.started_on_display);
             $(row).find('.field-completed_on_display').html(item.completed_on_display);
