@@ -3,6 +3,11 @@
 History
 =======
 
+0.1.12
+------
+* Deferred Task retrieval to avoid job vs. Task race condition
+* Improved Readme
+
 0.1.11
 ------
 * superuser can view all tasks, while other users have access to their own tasks only
