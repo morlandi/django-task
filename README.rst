@@ -90,6 +90,122 @@ Run worker(s):
     python manage.py rqworker low high default
     ...
 
+**Sample Task**
+
+.. code:: python
+
+    from django.db import models
+    from django.conf import settings
+    from django_task.models import Task
+
+
+    class SendEmailTask(Task):
+
+        sender = models.CharField(max_length=256, null=False, blank=False)
+        recipients = models.TextField(null=False, blank=False,
+            help_text='put addresses in separate rows')
+        subject = models.CharField(max_length=256, null=False, blank=False)
+        message = models.TextField(null=False, blank=True)
+
+        TASK_QUEUE = settings.QUEUE_LOW
+        DEFAULT_VERBOSITY = 2
+
+        @staticmethod
+        def get_jobfunc():
+            from .jobs import send_email
+            return send_email
+
+**Sample Job**
+
+.. code:: python
+
+    from __future__ import print_function
+    import redis
+    import logging
+    from django.conf import settings
+    from .models import SendEmailTask
+    from rq import get_current_job
+    from django_rq import job
+
+    @job(SendEmailTask.TASK_QUEUE)
+    def send_email(task_id):
+
+        task = None
+        result = 'SUCCESS'
+        failure_reason = ''
+
+        try:
+
+            # this raises a "Could not resolve a Redis connection" exception in sync mode
+            #job = get_current_job()
+            job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
+
+            #task = SendEmailTask.objects.get(id=task_id)
+            task = SendEmailTask.get_task_from_id(task_id)
+            task.set_status(status='STARTED', job_id=job.get_id())
+
+            params = task.retrieve_params_as_dict()
+
+            recipient_list = params['recipients'].split()
+            sender = params['sender'].strip()
+            subject = params['subject'].strip()
+            message = params['message']
+
+            from django.core.mail import send_mail
+            send_mail(subject, message, sender, recipient_list)
+
+        except Exception as e:
+            if task:
+                task.log(logging.ERROR, str(e))
+            result = 'FAILURE'
+            failure_reason = str(e)
+
+        finally:
+            if task:
+                task.set_status(status=result, failure_reason=failure_reason)
+
+**Sample management command**
+
+.. code:: python
+
+    from django_task.task_command import TaskCommand
+
+    class Command(TaskCommand):
+
+        def add_arguments(self, parser):
+            super(Command, self).add_arguments(parser)
+            parser.add_argument('sender')
+            parser.add_argument('subject')
+            parser.add_argument('message')
+            parser.add_argument('-r', '--recipients', nargs='*')
+
+        def handle(self, *args, **options):
+            from tasks.models import SendEmailTask
+
+            # transform the list of recipents into text
+            # (one line for each recipient)
+            options['recipients'] = '\n'.join(options['recipients']) if options['recipients'] is not None else ''
+
+            # format multiline message
+            options['message'] = options['message'].replace('\\n', '\n')
+
+            self.run_task(SendEmailTask, **options)
+
+**Deferred Task retrieval to avoid job vs. Task race condition**
+
+An helper Task.get_task_from_id() classmethod is supplied to retrieve Task object
+from task_id safely.
+
+*Task queues create a new type of race condition. Why ?
+Because message queues are fast !
+How fast ?
+Faster than databases.*
+
+See:
+
+https://speakerdeck.com/siloraptor/django-tasty-salad-dos-and-donts-using-celery
+
+
 **Howto separate jobs for different instances on the same machine**
 
 To sepatare jobs for different instances on the same machine (or more precisely
@@ -222,6 +338,7 @@ References:
 - `Asynchronous tasks in django with django-rq <https://spapas.github.io/2015/01/27/async-tasks-with-django-rq/>`_
 - `django-rq redux: advanced techniques and tools <https://spapas.github.io/2015/09/01/django-rq-redux/>`_
 - `Benchmark: Shared vs. Dedicated Redis Instances <https://redislabs.com/blog/benchmark-shared-vs-dedicated-redis-instances/>`_
+- `Django tasty salad - DOs and DON'Ts using Celery by Roberto Rosario <https://speakerdeck.com/siloraptor/django-tasty-salad-dos-and-donts-using-celery>`_
 
 Tools used in rendering this package:
 
