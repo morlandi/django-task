@@ -21,7 +21,8 @@ def count_beans(task_id):
         # this raises a "Could not resolve a Redis connection" exception in sync mode
         #job = get_current_job()
         job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
-        task = CountBeansTask.objects.get(id=task_id)
+        #task = CountBeansTask.objects.get(id=task_id)
+        task = CountBeansTask.get_task_from_id(task_id)
         task.set_status(status='STARTED', job_id=job.get_id())
 
         params = task.retrieve_params_as_dict()
@@ -54,7 +55,8 @@ def send_email(task_id):
         # this raises a "Could not resolve a Redis connection" exception in sync mode
         #job = get_current_job()
         job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
-        task = SendEmailTask.objects.get(id=task_id)
+        #task = SendEmailTask.objects.get(id=task_id)
+        task = SendEmailTask.get_task_from_id(task_id)
         task.set_status(status='STARTED', job_id=job.get_id())
 
         params = task.retrieve_params_as_dict()

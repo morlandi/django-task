@@ -75,6 +75,21 @@ class Task(models.Model):
     def __str__(self):
         return str(self.id)
 
+    @classmethod
+    def get_task_from_id(cls, task_id, timeout=1000, retry_count=10):
+        """
+
+        """
+        dt = timeout / retry_count
+        for i in range(retry_count):
+            try:
+                task = cls.objects.get(id=task_id)
+                return task
+            except cls.DoesNotExist:
+                pass
+            time.sleep(dt / 1000.0)
+        return None
+
     def get_child(self):
         """
         Return instance of the derived model from base class.
