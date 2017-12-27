@@ -31,6 +31,7 @@ class Task(models.Model):
         ordering = ('-created_on', )
         verbose_name = u"Task"
         verbose_name_plural = u"All Tasks"
+        get_latest_by = "created_on"
 
     # Celery tasks status values:
     # http://docs.celeryproject.org/en/latest/_modules/celery/states.html
@@ -119,21 +120,11 @@ class Task(models.Model):
                     break
                 except field.model.DoesNotExist:
                     pass
+                # TODO: investigate
+                # Occasionally receiving RelatedObjectDoesNotExist
+                except Exception:
+                    pass
         return child
-
-        """
-        Retrieve derived class from base class;
-        is there a better way ?
-
-        Adapted from:
-        https://stackoverflow.com/questions/9771180/model-inheritance-how-can-i-use-overridden-methods#9772220
-        """
-        # if hasattr(self, 'countbeanstask'):
-        #     return self.countbeanstask
-        # if hasattr(self, 'sendemailtask'):
-        #     return self.sendemailtask
-        #raise Exception("Task:get_child() couldn't recognize derived class")
-        #return self
 
     def as_dict(self):
         return {
@@ -206,7 +197,7 @@ class Task(models.Model):
         update_fields = ['status', ]
         self.status = status
 
-        if job_id is not None:
+        if job_id:
             self.job_id = job_id
             update_fields.append('job_id')
 
