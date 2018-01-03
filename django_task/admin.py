@@ -80,6 +80,19 @@ class TaskAdmin(admin.ModelAdmin):
             return readonly_fields + obj.retrieve_param_names()
         return readonly_fields
 
+    def get_prepopulated_fields(self, request, obj=None):
+        """
+        Hack: when editing an existing object, all fields have been set as readonly;
+        so we need to clear prepopulate_fields dict to avoid a runtime error.
+
+        "prepopulated_fields crashes with get_readonly_fields",
+        see: https://code.djangoproject.com/ticket/13618
+        """
+        if obj:
+            return {}
+        prepopulated_fields = super(TaskAdmin, self).get_prepopulated_fields(request, obj)
+        return prepopulated_fields
+
     def model_name_display(self, obj):
         try:
             model_name = obj.get_child()._meta.model_name
