@@ -21,9 +21,9 @@
 .task_status[data-task-status="REJECTED"] { background-image: url("/static/img/django_task/icon-no.gif"); }
 .task_status[data-task-status="IGNORED"]  { background-image: url("/static/img/django_task/icon-no.gif"); }
 
-
-/* hide "save and continue" button from submit row */
+/* Moved to js to leave other change-views untouched ...
+// hide "save and continue" button from submit row
 .submit-row button[name="_continue"] {
     display: none;
 }
-
+*/

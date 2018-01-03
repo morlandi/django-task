@@ -5,6 +5,10 @@
         if (body.hasClass('change-list') || body.hasClass('grp-change-list')) {
             update_tasks(1000);
         }
+        if (body.hasClass('change-form') || body.hasClass('grp-change-form')) {
+            // hide "save and continue" button from submit row
+            $('.submit-row button[name="_continue"]').hide();
+        }
     });
 
     var update_tasks_timer = null;
