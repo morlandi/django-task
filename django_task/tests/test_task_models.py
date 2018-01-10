@@ -1,8 +1,10 @@
-from base_testcase import BaseTestCase
+import time
+import django
+import sys
 from tasks.models import CountBeansTask
 
 
-class TaskModelTestCase(BaseTestCase):
+class CountBeansTestCase(django.test.TransactionTestCase):
 
     def test_count_beans_task_model(self):
 
@@ -19,3 +21,23 @@ class TaskModelTestCase(BaseTestCase):
         # Excepted params: {'num_beans': 1000, }
         params = task.retrieve_params_as_dict()
         self.assertDictEqual(params, {'num_beans': 1000, })
+
+    def test_count_beans_task_run(self):
+
+        task = CountBeansTask.objects.create(num_beans=100)
+        print('task.id: %s' % str(task.id))
+        job = task.run(async=False)
+        print('job.id: %s' % job.id)
+
+        # print('Waiting for task completed:')
+        # while True:
+        #     task = CountBeansTask.objects.get(id=task.id)
+        #     if task.check_status_complete():
+        #         break
+        #     print('task status: %s' % task.status)
+        #     sys.stdout.write('.')
+        #     sys.stdout.flush()
+        #     time.sleep(1.0)
+
+        task = CountBeansTask.objects.get(id=task.id)
+        self.assertTrue(task.check_status_complete())
