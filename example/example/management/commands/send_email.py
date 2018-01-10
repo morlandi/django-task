@@ -11,7 +11,7 @@ class Command(TaskCommand):
         parser.add_argument('-r', '--recipients', nargs='*')
 
     def handle(self, *args, **options):
-        from tasks.models import SendEmailTask
+        from example.models import SendEmailTask
 
         # transform the list of recipents into text
         # (one line for each recipient)

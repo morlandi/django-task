@@ -15,7 +15,10 @@ from django.template.defaultfilters import slugify
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 from django.utils import timezone
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except:
+    from django.core.urlresolvers import reverse
 from django.dispatch import receiver
 import django_rq
 #from rq import get_current_job

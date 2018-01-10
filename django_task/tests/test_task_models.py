@@ -1,5 +1,3 @@
-import json
-from django.core.urlresolvers import reverse
 from base_testcase import BaseTestCase
 from tasks.models import CountBeansTask
 
