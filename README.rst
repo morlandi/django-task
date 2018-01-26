@@ -184,8 +184,10 @@ Run worker(s):
 
         @staticmethod
         def get_jobfunc():
-            from .jobs import send_email
-            return send_email
+            #from .jobs import send_email
+            #return send_email
+            from .jobs import SendEmailJob
+            return SendEmailJob
 
 **Sample Job**
 
@@ -198,7 +200,6 @@ Run worker(s):
     from django.conf import settings
     from .models import SendEmailTask
     from django_task.job import Job
-    from rq import get_current_job
 
 
     class SendEmailJob(Job):
