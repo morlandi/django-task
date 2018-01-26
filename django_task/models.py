@@ -6,6 +6,7 @@ import datetime
 import time
 import logging
 import sys
+import types
 import django.utils.timezone
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -74,6 +75,7 @@ class Task(models.Model):
     #
 
     TASK_QUEUE = ''
+    TASK_TIMEOUT = 0
     DEFAULT_VERBOSITY = 0
 
     def __str__(self):
@@ -352,13 +354,38 @@ class Task(models.Model):
 
         #self.check_worker_active_for_queue() !!!
 
-        job = None
-        jobfunc = self.get_jobfunc()
-        if ALWAYS_EAGER or not async:
-            queue = django_rq.get_queue(self.TASK_QUEUE, async=False)
-            job = queue.enqueue(jobfunc, self.id)
+
+        # This has been refactored in v1.3.0
+        #
+        # job = None
+        # jobfunc = self.get_jobfunc()
+        # if ALWAYS_EAGER or not async:
+        #     queue = django_rq.get_queue(self.TASK_QUEUE, async=False)
+        #     job = queue.enqueue(jobfunc, self.id)
+        # else:
+        #     job = jobfunc.delay(self.id)
+
+        if ALWAYS_EAGER:
+            async = False
+
+        # See: https://github.com/rq/django-rq
+        if self.TASK_TIMEOUT > 0:
+            queue = django_rq.get_queue(self.TASK_QUEUE, async=async, default_timeout=self.TASK_TIMEOUT)
         else:
-            job = jobfunc.delay(self.id)
+            queue = django_rq.get_queue(self.TASK_QUEUE, async=async)
+
+        # Now we accept either a jobfunc or a Job-derived class
+        try:
+            jobfunc_or_class = self.get_jobfunc()
+            if isinstance(jobfunc_or_class, types.FunctionType):
+                jobfunc = jobfunc_or_class
+                job = queue.enqueue(jobfunc, self.id)
+            else:
+                jobclass = jobfunc_or_class
+                #assert isinstance(jobclass, Job):
+                job = queue.enqueue(jobclass.run, task_class=self.__class__, task_id=self.id)
+        except:
+            raise Exception('Provide either a function or a class derived from Job')
 
         return job
 

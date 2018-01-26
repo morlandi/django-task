@@ -19,8 +19,10 @@ class CountBeansTask(Task):
 
     @staticmethod
     def get_jobfunc():
-        from .jobs import count_beans
-        return count_beans
+        # from .jobs import count_beans
+        # return count_beans
+        from .jobs import CountBeansJob
+        return CountBeansJob
 
 
 class SendEmailTask(Task):
@@ -41,5 +43,7 @@ class SendEmailTask(Task):
 
     @staticmethod
     def get_jobfunc():
-        from .jobs import send_email
-        return send_email
+        # from .jobs import send_email
+        # return send_email
+        from .jobs import SendEmailJob
+        return SendEmailJob
