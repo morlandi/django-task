@@ -53,8 +53,16 @@ class Task(models.Model):
         'REJECTED',
     )
     DEFAULT_TASK_STATUS_VALUE = TASK_STATUS_VALUES[0]
-
     TASK_STATUS_CHOICES = ((item, item) for item in TASK_STATUS_VALUES)
+
+    TASK_MODE_VALUES = (
+        'UNKNOWN',
+        'SYNC',
+        'ASYNC',
+    )
+    DEFAULT_TASK_MODE_VALUE = TASK_MODE_VALUES[0]
+    TASK_MODE_CHOICES = ((item, item) for item in TASK_MODE_VALUES)
+
     logger = None
 
     # A base model to save information about an asynchronous task
@@ -67,6 +75,8 @@ class Task(models.Model):
     job_id = models.CharField(_('job id'), max_length=128, null=False, blank=True)
     status = models.CharField(_('status'), max_length=128, null=False, blank=False, db_index=True,
         choices=TASK_STATUS_CHOICES, default=DEFAULT_TASK_STATUS_VALUE)
+    mode = models.CharField(_('mode'), max_length=128, null=False, blank=False, db_index=True,
+        choices=TASK_MODE_CHOICES, default=DEFAULT_TASK_MODE_VALUE)
     failure_reason = models.CharField(_('failure reason'), max_length=256, null=False, blank=True)
     progress = models.IntegerField(_('progress'), null=True, blank=True)
 
@@ -175,6 +185,14 @@ class Task(models.Model):
 
     ############################################################################
     # Duration, status and progress management
+
+    @property
+    def async_mode(self):
+        return self.mode == 'ASYNC'
+
+    @property
+    def sync_mode(self):
+        return self.mode == 'SYNC'
 
     @property
     def duration(self):
@@ -367,6 +385,9 @@ class Task(models.Model):
 
         if ALWAYS_EAGER:
             async = False
+
+        self.mode = 'ASYNC' if async else 'SYNC'
+        self.save(update_fields=['mode', ])
 
         # See: https://github.com/rq/django-rq
         if self.TASK_TIMEOUT > 0:

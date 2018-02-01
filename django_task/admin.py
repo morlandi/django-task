@@ -44,12 +44,12 @@ class TaskAdmin(admin.ModelAdmin):
         return qs.filter(created_by=request.user)
 
     list_display = ['created_on_display', 'created_by', 'started_on_display', 'completed_on_display',
-        'duration_display', 'status_display', 'progress_display', ]
+        'duration_display', 'status_display', 'progress_display', 'mode']
     list_filter = ['created_on', 'started_on', 'status', ]
     date_hierarchy = 'created_on'
 
     readonly_fields = ['created_on', 'created_by', 'started_on', 'completed_on', 'job_id',
-        'status', 'failure_reason', 'progress', 'verbosity', ]
+        'status', 'failure_reason', 'progress', 'verbosity', 'mode', ]
 
     def get_list_display(self, request):
         list_display = self.list_display[:]
