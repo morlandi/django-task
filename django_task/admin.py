@@ -76,6 +76,8 @@ class TaskAdmin(admin.ModelAdmin):
 
         return fieldsets
 
+    search_fields = ['=id', '=job_id', ]
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super(TaskAdmin, self).get_readonly_fields(request, obj)
         if obj:
