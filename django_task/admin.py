@@ -49,13 +49,13 @@ class TaskAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_on'
 
     readonly_fields = ['created_on', 'created_by', 'started_on', 'completed_on', 'job_id',
-        'status', 'failure_reason', 'progress', 'verbosity', 'mode', ]
+        'status', 'failure_reason', 'progress', 'verbosity', 'mode', 'log_text']
 
     def get_list_display(self, request):
         list_display = self.list_display[:]
         # Superuser has access to task's log
         if request.user.is_superuser:
-            list_display.append('log_link', )
+            list_display.append('log_link_display')
         if self.model._meta.model_name == 'task':
             list_display.append('model_name_display')
         return list_display
@@ -114,15 +114,6 @@ class TaskAdmin(admin.ModelAdmin):
         return format_datetime(obj.completed_on, include_time=True)
     completed_on_display.short_description = _('Completed on')
 
-    def log_link(self, obj):
-        html = ''
-        if os.path.exists(obj._logfile()):
-            info = self.model._meta.app_label, self.model._meta.model_name
-            url = reverse('admin:%s_%s_viewlog' % info, args=(obj.id, ))
-            html = '<a href="%s">%s</a>' % (url, "log")
-        return mark_safe(html)
-    log_link.short_description = _('Log')
-
     def started_on_display(self, obj):
         if obj.job_id:
             html = format_datetime(obj.started_on, include_time=True)
@@ -143,9 +134,12 @@ class TaskAdmin(admin.ModelAdmin):
             url(r'^(?P<object_id>[^/]+)/repeat/$',
                 self.admin_site.admin_view(self.repeat), {},
                 name="%s_%s_repeat" % info),
-            url(r'^(?P<object_id>[^/]+)/view-log/$',
-                self.admin_site.admin_view(self.view_log), {},
-                name="%s_%s_viewlog" % info),
+            url(r'^(?P<object_id>[^/]+)/view-logfile/$',
+                self.admin_site.admin_view(self.view_logfile), {},
+                name="%s_%s_viewlogfile" % info),
+            url(r'^(?P<object_id>[^/]+)/view-logtext/$',
+                self.admin_site.admin_view(self.view_logtext), {},
+                name="%s_%s_viewlogtext" % info),
         ]
         return my_urls + urls
 
@@ -175,7 +169,7 @@ class TaskAdmin(admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
         return HttpResponseRedirect(reverse("admin:%s_%s_changelist" % info))
 
-    def view_log(self, request, object_id):
+    def view_logfile(self, request, object_id):
         # NOTE:
         # starting from Django 1.10, a specific FileResponse will be avaibale:
         #     https://docs.djangoproject.com/en/1.10/ref/request-response/#fileresponse-objects
@@ -194,6 +188,11 @@ class TaskAdmin(admin.ModelAdmin):
 
         response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(filename)
         response['Content-Length'] = os.path.getsize(filename)
+        return response
+
+    def view_logtext(self, request, object_id):
+        obj = get_object_by_uuid_or_404(self.model, object_id)
+        response = HttpResponse(obj.log_text, content_type='text/plain; charset=utf-8')
         return response
 
     def save_model(self, request, obj, form, change):

@@ -3,6 +3,7 @@
     $(document).ready(function() {
         var body = $('body');
         if (body.hasClass('change-list') || body.hasClass('grp-change-list')) {
+            $('.field-log_link_display a.logtext').on('click', view_log_text);
             update_tasks(1000);
         }
         if (body.hasClass('change-form') || body.hasClass('grp-change-form')) {
@@ -77,10 +78,24 @@
             $(row).find('.field-duration_display').html(item.duration_display);
             $(row).find('.field-status_display').html(item.status_display);
             $(row).find('.field-progress_display').html(item.progress_display);
+            $(row).find('.field-log_link_display').html(item.log_link_display);
             for (key in item.extra_fields) {
                 $(row).find('.field-' + key).html(item.extra_fields[key]);
             }
+            $(row).find('.field-log_link_display a.logtext').on('click', view_log_text);
         }
+    }
+
+    function view_log_text(event) {
+        var url = $(event.target).attr('href');
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(data, textStatus, jqXHR) {
+                alert(data);
+            }
+        });
+        return false;
     }
 
 })(django.jQuery);

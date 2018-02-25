@@ -7,6 +7,10 @@ import time
 import logging
 import sys
 import types
+try:
+    from cStringIO import StringIO      # Python 2
+except ImportError:
+    from io import StringIO
 import django.utils.timezone
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -64,6 +68,7 @@ class Task(models.Model):
     TASK_MODE_CHOICES = ((item, item) for item in TASK_MODE_VALUES)
 
     logger = None
+    log_stream = StringIO()
 
     # A base model to save information about an asynchronous task
     id = models.UUIDField('id', default=uuid.uuid4, primary_key=True, unique=True, null=False, blank=False, editable=False)
@@ -79,6 +84,7 @@ class Task(models.Model):
         choices=TASK_MODE_CHOICES, default=DEFAULT_TASK_MODE_VALUE)
     failure_reason = models.CharField(_('failure reason'), max_length=256, null=False, blank=True)
     progress = models.IntegerField(_('progress'), null=True, blank=True)
+    log_text = models.TextField(_('log text'), null=False, blank=False)
 
     #
     # To be overridden in derived Task class
@@ -87,6 +93,8 @@ class Task(models.Model):
     TASK_QUEUE = ''
     TASK_TIMEOUT = 0
     DEFAULT_VERBOSITY = 0
+    LOG_TO_FILE = False
+    LOG_TO_FIELD = False
 
     def __str__(self):
         return str(self.id)
@@ -155,6 +163,7 @@ class Task(models.Model):
             'job_id': self.job_id,
             'status': self.status,
             'status_display': self.status_display(),
+            'log_link_display': self.log_link_display(),
             'failure_reason': self.failure_reason,
             'progress': self.progress,
             'progress_display': self.progress_display(),
@@ -167,6 +176,16 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
         if self.verbosity is None:
             self.verbosity = self.DEFAULT_VERBOSITY
+
+        if self.LOG_TO_FIELD:
+            text = self.log_stream.getvalue()
+            if len(text):
+                # Update 'log_text' field and make sure it'll be saved
+                self.log_text = text
+                if 'update_fields' in kwargs:
+                    if 'log_text' not in kwargs['update_fields']:
+                        kwargs['update_fields'].append('log_text')
+
         super(Task, self).save(*args, **kwargs)
 
     def clone(self, request=None):
@@ -254,6 +273,18 @@ class Task(models.Model):
     status_display.short_description = _(u'status')
     status_display.admin_order_field = 'status'
 
+    def log_link_display(self):
+        html = ''
+        info = self._meta.app_label, self._meta.model_name
+        if os.path.exists(self._logfile()):
+            url = reverse('admin:%s_%s_viewlogfile' % info, args=(self.id, ))
+            html += '<a href="%s">%s</a>' % (url, "Download ")
+        if self.log_text:
+            url = reverse('admin:%s_%s_viewlogtext' % info, args=(self.id, ))
+            html += '<a class="logtext" href="%s">%s</a>' % (url, "View ")
+        return mark_safe(html)
+    log_link_display.short_description = _(u'log')
+
     def set_progress(self, value, step=0, commit=True):
         """
         Update task's progress value;
@@ -311,18 +342,26 @@ class Task(models.Model):
             self.logger = logging.getLogger(logger_name)
             level = logging.DEBUG if verbosity >= 2 else logging.INFO
             self.logger.setLevel(level)
-
             format_string = '%(asctime)s|%(levelname)s|%(message)s'
 
-            logfile = self._logfile()
-            if logfile:
-                handler = logging.FileHandler(logfile, 'w')
-                handler.setFormatter(logging.Formatter(format_string))
-                self.logger.addHandler(handler)
+            # Log to file
+            if self.LOG_TO_FILE:
+                logfile = self._logfile()
+                if logfile:
+                    handler = logging.FileHandler(logfile, 'w')
+                    handler.setFormatter(logging.Formatter(format_string))
+                    self.logger.addHandler(handler)
 
+            # Log to stdout
             handler = logging.StreamHandler(sys.stdout)
             handler.setFormatter(logging.Formatter('\x1b[1;33;40m%s\x1b[0m' % format_string))
             self.logger.addHandler(handler)
+
+            # Log to text field
+            if self.LOG_TO_FIELD:
+                handler = logging.StreamHandler(self.log_stream)
+                handler.setFormatter(logging.Formatter(format_string))
+                self.logger.addHandler(handler)
 
         return self.logger
 
@@ -330,6 +369,7 @@ class Task(models.Model):
         """
         Log specified message to task's own file logger
         """
+
         logger = self.get_logger(self.verbosity)
         if logger:
             logger.log(level, message, *args, **kwargs)
