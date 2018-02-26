@@ -281,7 +281,8 @@ class Task(models.Model):
             html += '<a href="%s">%s</a>' % (url, "Download ")
         if self.log_text:
             url = reverse('admin:%s_%s_viewlogtext' % info, args=(self.id, ))
-            html += '<a class="logtext" href="%s">%s</a>' % (url, "View ")
+            html += '<a class="logtext" href="%s">%s</a>' % (url, "QuickView ")
+            html += '<a href="%s">%s</a>' % (url, "View ")
         return mark_safe(html)
     log_link_display.short_description = _(u'log')
 
