@@ -72,7 +72,7 @@ class Task(models.Model):
     TASK_MODE_CHOICES = ((item, item) for item in TASK_MODE_VALUES)
 
     logger = None
-    log_stream = StringIO()
+    log_stream = None
 
     # A base model to save information about an asynchronous task
     id = models.UUIDField('id', default=uuid.uuid4, primary_key=True, unique=True, null=False, blank=False, editable=False)
@@ -240,32 +240,26 @@ class Task(models.Model):
 
     def set_status(self, status, job_id=None, failure_reason=None, commit=True):
 
-        update_fields = ['status', ]
         self.status = status
 
         if job_id:
             self.job_id = job_id
-            update_fields.append('job_id')
 
         if status in ['STARTED', ]:
             self.started_on = timezone.make_aware(datetime.datetime.now())
-            update_fields.append('started_on')
         elif self.check_status_complete():
             self.completed_on = timezone.make_aware(datetime.datetime.now())
-            update_fields.append('completed_on')
 
         if failure_reason is not None:
             # truncate messate to prevent field overflow
             self.failure_reason = failure_reason[:self._meta.get_field('failure_reason').max_length]
-            update_fields.append('failure_reason')
 
-        #trace('current job: %s (task: %s)' % (job.get_id(), task.id))
         self.log(logging.INFO, '%s [task: "%s", job: "%s"]' % (status, self.id, self.job_id))
-        if status in ['STARTED', ]:
+        if self.check_status_complete():
             self.log(logging.INFO, 'params: %s' % str(self.retrieve_params_as_dict()))
 
         if commit:
-            self.save(update_fields=update_fields)
+            self.save()
 
     def check_status_complete(self):
         return self.status in ['SUCCESS', 'FAILURE', 'REVOKED', 'REJECTED', 'IGNORED', ]
@@ -378,6 +372,8 @@ class Task(models.Model):
         logger = self.get_logger(self.verbosity)
         if logger:
             logger.log(level, message, *args, **kwargs)
+            # if self.LOG_TO_FIELD:
+            #     self.log_text = self.log_text + message + '\n'
 
     ############################################################################
     # Job execution
@@ -416,7 +412,6 @@ class Task(models.Model):
             raise Exception('already scheduled for execution')
 
         #self.check_worker_active_for_queue() !!!
-
 
         # This has been refactored in v1.3.0
         #
