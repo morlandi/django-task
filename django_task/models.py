@@ -76,6 +76,7 @@ class Task(models.Model):
 
     # A base model to save information about an asynchronous task
     id = models.UUIDField('id', default=uuid.uuid4, primary_key=True, unique=True, null=False, blank=False, editable=False)
+    description = models.CharField(_('description'), max_length=256, null=False, blank=True)
     created_on = models.DateTimeField(_('created on'), auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='+', on_delete=models.SET_NULL)
     started_on = models.DateTimeField(_('started on'), null=True)
@@ -88,7 +89,7 @@ class Task(models.Model):
         choices=TASK_MODE_CHOICES, default=DEFAULT_TASK_MODE_VALUE)
     failure_reason = models.CharField(_('failure reason'), max_length=256, null=False, blank=True)
     progress = models.IntegerField(_('progress'), null=True, blank=True)
-    log_text = models.TextField(_('log text'), null=False, blank=False)
+    log_text = models.TextField(_('log text'), null=False, blank=True)
 
     #
     # To be overridden in derived Task class
@@ -101,6 +102,8 @@ class Task(models.Model):
     LOG_TO_FIELD = False
 
     def __str__(self):
+        if self.description:
+            return self.description
         return str(self.id)
 
     @classmethod

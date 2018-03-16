@@ -43,7 +43,7 @@ class TaskAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(created_by=request.user)
 
-    list_display = ['created_on_display', 'created_by', 'started_on_display', 'completed_on_display',
+    list_display = ['__str__', 'created_on_display', 'created_by', 'started_on_display', 'completed_on_display',
         'duration_display', 'status_display', 'progress_display', 'mode']
     list_filter = ['created_on', 'started_on', 'status', ]
     date_hierarchy = 'created_on'
@@ -109,10 +109,12 @@ class TaskAdmin(admin.ModelAdmin):
     def created_on_display(self, obj):
         return format_datetime(obj.created_on, include_time=True)
     created_on_display.short_description = _('Created on')
+    created_on_display.admin_order_field = 'created_on'
 
     def completed_on_display(self, obj):
         return format_datetime(obj.completed_on, include_time=True)
     completed_on_display.short_description = _('Completed on')
+    completed_on_display.admin_order_field = 'completed_on'
 
     def started_on_display(self, obj):
         if obj.job_id:
@@ -123,6 +125,7 @@ class TaskAdmin(admin.ModelAdmin):
             html = '<a href="%s">%s</a>' % (url, _('run'))
         return mark_safe(html)
     started_on_display.short_description = _('Started on')
+    started_on_display.admin_order_field = 'started_on'
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
