@@ -104,7 +104,8 @@ class Task(models.Model):
     def __str__(self):
         if self.description:
             return self.description
-        return str(self.id)
+        #return str(self.id)
+        return self.get_child()._meta.verbose_name
 
     @classmethod
     def get_task_from_id(cls, task_id, timeout=1000, retry_count=10):
