@@ -31,15 +31,20 @@
         }
 
         // Collect incomplete taks
-        var incomplete_task_ids = [];
+        var incomplete_tasks = [];
         $('.task_status[data-task-complete="0"]').each(function(index, item) {
-            incomplete_task_ids.push($(item).data('task-id'));
+            incomplete_tasks.push({
+                id: $(item).data('task-id'),
+                model: $(item).data('task-model')
+            });
         });
-        if (incomplete_task_ids.length > 0) {
+        //console.log('incomplete tasks: %o', incomplete_tasks);
+
+        if (incomplete_tasks.length > 0) {
 
             $.ajax({
                 url: '/django_task/info/',
-                data: {'ids[]': incomplete_task_ids},
+                data: JSON.stringify(incomplete_tasks),
                 cache: false,
                 crossDomain: true,
                 type: 'post',

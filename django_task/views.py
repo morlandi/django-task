@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
+import json
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.core import serializers
+from django.apps import apps
 
 from .utils import format_datetime
 from .models import Task
@@ -12,12 +14,12 @@ def tasks_info_api(request):
     # if not request.is_ajax():
     #     raise PermissionDenied
     try:
-        # Accept iether GET or POST
-        if not getattr(request, 'REQUEST', None):
-            request.REQUEST = request.GET if request.method=='GET' else request.POST
-        ids = request.REQUEST.getlist('ids[]')
-        tasks = Task.objects.filter(id__in=ids)
-        json_response = [task.get_child().as_dict() for task in tasks]
+        json_response = []
+        rows = json.loads(request.body)
+        for row in rows:
+            task_model = apps.get_model(row['model'])
+            task_obj = task_model.objects.get(id=row['id'])
+            json_response.append(task_obj.as_dict())
         response_status = 200
     except Exception as e:
         json_response = str(e)

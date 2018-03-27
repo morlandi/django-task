@@ -270,8 +270,8 @@ class Task(models.Model):
         return self.status in ['SUCCESS', 'FAILURE', 'REVOKED', 'REJECTED', 'IGNORED', ]
 
     def status_display(self):
-        html = '<div class="task_status" data-task-id="%s" data-task-status="%s" data-task-complete="%d">%s</div>' % (
-            str(self.id), self.status, self.check_status_complete(), self.status)
+        html = '<div class="task_status" data-task-model="%s.%s" data-task-id="%s" data-task-status="%s" data-task-complete="%d">%s</div>' % (
+            self._meta.app_label, self._meta.model_name, str(self.id), self.status, self.check_status_complete(), self.status)
         return mark_safe(html)
     status_display.short_description = _(u'status')
     status_display.admin_order_field = 'status'
