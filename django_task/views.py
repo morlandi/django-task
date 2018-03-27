@@ -15,7 +15,7 @@ def tasks_info_api(request):
     #     raise PermissionDenied
     try:
         json_response = []
-        rows = json.loads(request.body)
+        rows = json.loads(request.body.decode('utf-8'))
         for row in rows:
             task_model = apps.get_model(row['model'])
             task_obj = task_model.objects.get(id=row['id'])
