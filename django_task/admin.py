@@ -23,7 +23,7 @@ from .utils import get_object_by_uuid_or_404
 from .utils import format_datetime
 
 
-@admin.register(Task)
+#@admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
 
     class Media:

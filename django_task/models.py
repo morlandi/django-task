@@ -40,6 +40,7 @@ class Task(models.Model):
         verbose_name = u"Task"
         verbose_name_plural = u"All Tasks"
         get_latest_by = "created_on"
+        abstract = True
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
