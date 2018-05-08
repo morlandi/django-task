@@ -7,6 +7,7 @@ import time
 import logging
 import sys
 import types
+import pprint
 try:
     from cStringIO import StringIO      # Python 2
 except ImportError:
@@ -261,7 +262,8 @@ class Task(models.Model):
 
         self.log(logging.INFO, '%s [task: "%s", job: "%s"]' % (status, self.id, self.job_id))
         if self.check_status_complete():
-            self.log(logging.INFO, 'params: %s' % str(self.retrieve_params_as_dict()))
+            #self.log(logging.INFO, 'params: %s' % str(self.retrieve_params_as_dict()))
+            self.log(logging.DEBUG, 'params: \n' + pprint.pformat(self.retrieve_params_as_dict()))
 
         if commit:
             self.save()
