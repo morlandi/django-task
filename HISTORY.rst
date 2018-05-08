@@ -3,6 +3,10 @@
 History
 =======
 
+v1.0.1
+------
+* fix: Wrong migration dependency removed
+
 v1.0.0
 ------
 * INCOMPATIBLE CHANGE: Make model Task abstract for better listing performances
