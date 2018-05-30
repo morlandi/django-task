@@ -49,11 +49,15 @@ class Task(models.Model):
 
     # Celery tasks status values:
     # http://docs.celeryproject.org/en/latest/_modules/celery/states.html
-    TASK_STATUS_VALUES = (
+
+    TASK_STATUS_PENDING_VALUES = (
         'PENDING',      #: Task state is unknown (assumed pending since you know the id).
         'RECEIVED',     #: Task was received by a worker (only used in events).
         'STARTED',      #: Task was started by a worker (:setting:`task_track_started`).
         'PROGESS',
+    )
+
+    TASK_STATUS_COMPLETED_VALUES = (
         'SUCCESS',      #: Task succeeded
         'FAILURE',      #: Task failed
         'REVOKED',      #: Task was revoked.
@@ -62,6 +66,22 @@ class Task(models.Model):
         'IGNORED',
         'REJECTED',
     )
+
+    TASK_STATUS_VALUES = TASK_STATUS_PENDING_VALUES + TASK_STATUS_COMPLETED_VALUES
+
+    # TASK_STATUS_VALUES = (
+    #     'PENDING',      #: Task state is unknown (assumed pending since you know the id).
+    #     'RECEIVED',     #: Task was received by a worker (only used in events).
+    #     'STARTED',      #: Task was started by a worker (:setting:`task_track_started`).
+    #     'PROGESS',
+    #     'SUCCESS',      #: Task succeeded
+    #     'FAILURE',      #: Task failed
+    #     'REVOKED',      #: Task was revoked.
+    #     'REJECTED',     #: Task was rejected (only used in events).
+    #     'RETRY',        #: Task is waiting for retry.
+    #     'IGNORED',
+    #     'REJECTED',
+    # )
     DEFAULT_TASK_STATUS_VALUE = TASK_STATUS_VALUES[0]
     TASK_STATUS_CHOICES = ((item, item) for item in TASK_STATUS_VALUES)
 
@@ -269,7 +289,8 @@ class Task(models.Model):
             self.save()
 
     def check_status_complete(self):
-        return self.status in ['SUCCESS', 'FAILURE', 'REVOKED', 'REJECTED', 'IGNORED', ]
+        return self.status in self.TASK_STATUS_COMPLETED_VALUES
+        #return self.status in ['SUCCESS', 'FAILURE', 'REVOKED', 'REJECTED', 'IGNORED', ]
 
     def status_display(self):
         html = '<div class="task_status" data-task-model="%s.%s" data-task-id="%s" data-task-status="%s" data-task-complete="%d">%s</div>' % (
