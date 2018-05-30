@@ -3,6 +3,10 @@
 History
 =======
 
+v1.1.1
+------
+* provide list of pending and completed task status
+
 v1.1.0
 ------
 * INCOMPATIBLE CHANGE: Make model Task abstract for better listing performances
