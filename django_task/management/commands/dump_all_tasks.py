@@ -16,9 +16,8 @@ class Command(DumpdataCommand):
 
     def handle(self, *app_labels, **options):
 
-        # List Task model first, then all Task subclasses
+        # List all Task subclasses
         app_labels = [
-            'django_task.Task',
         ]
         models = apps.get_models()
         task_models = [model for model in models if issubclass(model, Task) and model != Task]

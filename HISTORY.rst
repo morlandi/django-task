@@ -3,6 +3,13 @@
 History
 =======
 
+v1.1.3
+------
+* cleanup: remove get_child() method being Task an abstract class
+* fix: skip Task model (being abstract) in dump_all_tasks and delete_all_tasks management commands
+* generic get_model_from_id() helper
+* Job.on_complete() callback
+
 v1.1.2
 ------
 * provide list of pending and completed task status

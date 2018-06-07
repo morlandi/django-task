@@ -48,16 +48,16 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ['created_on', 'started_on', 'status', ]
     date_hierarchy = 'created_on'
 
-    readonly_fields = ['created_on', 'created_by', 'started_on', 'completed_on', 'job_id',
-        'status', 'failure_reason', 'progress', 'verbosity', 'mode', 'log_text']
+    readonly_fields = ['description', 'created_on', 'created_by', 'started_on', 'completed_on', 'job_id',
+        'status', 'failure_reason', 'progress', 'verbosity', 'mode', 'log_text', ]
 
     def get_list_display(self, request):
         list_display = self.list_display[:]
         # Superuser has access to task's log
         if request.user.is_superuser:
             list_display.append('log_link_display')
-        if self.model._meta.model_name == 'task':
-            list_display.append('model_name_display')
+        # if self.model._meta.model_name == 'task':
+        #     list_display.append('model_name_display')
         return list_display
 
     def get_fieldsets(self, request, obj=None):
@@ -98,13 +98,13 @@ class TaskAdmin(admin.ModelAdmin):
         prepopulated_fields = super(TaskAdmin, self).get_prepopulated_fields(request, obj)
         return prepopulated_fields
 
-    def model_name_display(self, obj):
-        try:
-            model_name = obj.get_child()._meta.model_name
-        except:
-            model_name = self.model._meta.model_name
-        return model_name
-    model_name_display.short_description = _('Task')
+    # def model_name_display(self, obj):
+    #     try:
+    #         model_name = obj.get_child()._meta.model_name
+    #     except:
+    #         model_name = self.model._meta.model_name
+    #     return model_name
+    # model_name_display.short_description = _('Task')
 
     def created_on_display(self, obj):
         return format_datetime(obj.created_on, include_time=True)

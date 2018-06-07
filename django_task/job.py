@@ -37,6 +37,14 @@ class Job(object):
         finally:
             if task:
                 task.set_status(status=result, failure_reason=failure_reason)
+            try:
+                job_class.on_complete(job, task)
+            except Exception as e:
+                print('NESTED ERROR: Job.on_completed() raises error "%s"' % str(e))
+
+    @staticmethod
+    def on_complete(job, task):
+        pass
 
     @staticmethod
     def execute(job, task):

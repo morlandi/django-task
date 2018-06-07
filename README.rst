@@ -303,6 +303,10 @@ See:
 
 https://speakerdeck.com/siloraptor/django-tasty-salad-dos-and-donts-using-celery
 
+A similar generic helper is available for Job-derived needs::
+
+    django_task.utils.get_model_from_id(model_cls, id, timeout=1000, retry_count=10)
+
 
 **Howto separate jobs for different instances on the same machine**
 

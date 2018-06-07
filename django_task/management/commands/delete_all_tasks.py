@@ -13,7 +13,6 @@ class Command(BaseCommand):
         # Delete all subtasks, then Tak itself
         models = apps.get_models()
         task_models = [model for model in models if issubclass(model, Task) and model != Task]
-        task_models.append(Task)
         for model in task_models:
             print('Deleting %s objects (%d) ...' % (model.__name__, model.objects.count()))
             model.objects.all().delete()

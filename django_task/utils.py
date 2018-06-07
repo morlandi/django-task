@@ -55,3 +55,18 @@ def remove_file_and_cleanup(filepath):
     # finally, remove folder if empty
     if os.path.isdir(folder) and len(os.listdir(folder)) <= 0:
         os.rmdir(folder)
+
+
+def get_model_from_id(model_cls, id, timeout=1000, retry_count=10):
+    """
+    Retrieve a record
+    """
+    dt = timeout / retry_count
+    for i in range(retry_count):
+        try:
+            task = model_cls.objects.get(id=id)
+            return task
+        except model_cls.DoesNotExist:
+            pass
+        time.sleep(dt / 1000.0)
+    return None
