@@ -4,12 +4,19 @@ import logging
 import traceback
 from rq import get_current_job
 from .app_settings import REDIS_URL
+from .app_settings import JOB_TRACE_ENABLED
+
+
+def job_trace(message):
+    if JOB_TRACE_ENABLED:
+        print(('\x1b[1;35;40m%s\x1b[0m' % message))
 
 
 class Job(object):
 
     @classmethod
     def run(job_class, task_class, task_id):
+        job_trace('job.run() enter')
         task = None
         result = 'SUCCESS'
         failure_reason = ''
@@ -28,6 +35,9 @@ class Job(object):
             job_class.execute(job, task)
 
         except Exception as e:
+            job_trace('ERROR: %s' % str(e))
+            job_trace(traceback.format_exc())
+
             if task:
                 task.log(logging.ERROR, str(e))
                 task.log(logging.ERROR, traceback.format_exc())
@@ -40,7 +50,9 @@ class Job(object):
             try:
                 job_class.on_complete(job, task)
             except Exception as e:
-                print('NESTED ERROR: Job.on_completed() raises error "%s"' % str(e))
+                job_trace('NESTED ERROR: Job.on_completed() raises error "%s"' % str(e))
+                job_trace(traceback.format_exc())
+        job_trace('job.run() leave')
 
     @staticmethod
     def on_complete(job, task):

@@ -417,8 +417,11 @@ DJANGOTASK_ALWAYS_EAGER
 
     Default: False
 
+DJANGOTASK_JOB_TRACE_ENABLED
 
-task.log(logging.ERROR, traceback.format_exc())
+    Enables low level tracing in Job.run() - for debugging challenging race conditions
+
+    Default: False
 
 REDIS_URL
 

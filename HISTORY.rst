@@ -3,6 +3,11 @@
 History
 =======
 
+v1.2.0
+------
+* DJANGOTASK_JOB_TRACE_ENABLED setting added to enable low level tracing in Job.run()
+* Added missing import in utils.py
+
 v1.1.3
 ------
 * cleanup: remove get_child() method being Task an abstract class

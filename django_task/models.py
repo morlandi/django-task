@@ -268,19 +268,24 @@ class Task(models.Model):
 
     def set_status(self, status, job_id=None, failure_reason=None, commit=True):
 
+        update_fields = ['status', ]
         self.status = status
 
         if job_id:
             self.job_id = job_id
+            update_fields.append('job_id')
 
         if status in ['STARTED', ]:
             self.started_on = timezone.make_aware(datetime.datetime.now())
+            update_fields.append('started_on')
         elif self.check_status_complete():
             self.completed_on = timezone.make_aware(datetime.datetime.now())
+            update_fields.append('completed_on')
 
         if failure_reason is not None:
             # truncate messate to prevent field overflow
             self.failure_reason = failure_reason[:self._meta.get_field('failure_reason').max_length]
+            update_fields.append('failure_reason')
 
         self.log(logging.INFO, '%s [task: "%s", job: "%s"]' % (status, self.id, self.job_id))
         if self.check_status_complete():
@@ -288,7 +293,7 @@ class Task(models.Model):
             self.log(logging.DEBUG, 'params: \n' + pprint.pformat(self.retrieve_params_as_dict()))
 
         if commit:
-            self.save()
+            self.save(update_fields=update_fields)
 
     def check_status_complete(self):
         return self.status in self.TASK_STATUS_COMPLETED_VALUES

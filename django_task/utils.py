@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import uuid
 import os
+import time
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import formats
