@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import formats
 from django.utils import timezone
+from django.apps import apps
 
 
 def get_object_by_uuid_or_404(model, uuid_pk):
@@ -71,3 +72,21 @@ def get_model_from_id(model_cls, id, timeout=1000, retry_count=10):
             pass
         time.sleep(dt / 1000.0)
     return None
+
+
+def revoke_pending_tasks():
+
+    from .models import Task
+
+    models = apps.get_models()
+    task_models = [model for model in models if issubclass(model, Task) and model != Task]
+    counter = 0
+    for model in task_models:
+        queryset = model.objects.filter(status__in=Task.TASK_STATUS_PENDING_VALUES)
+        n = queryset.count()
+        print('revoking %s objects (%d) ...' % (model.__name__, n))
+        #model.objects.all().delete()
+        queryset.update(status='REVOKED')
+        counter += n
+
+    return counter

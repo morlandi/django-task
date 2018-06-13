@@ -3,6 +3,10 @@
 History
 =======
 
+v1.2.1
+------
+* util revoke_pending_tasks() added
+
 v1.2.0
 ------
 * DJANGOTASK_JOB_TRACE_ENABLED setting added to enable low level tracing in Job.run()
