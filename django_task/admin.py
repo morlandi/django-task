@@ -202,7 +202,8 @@ class TaskAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         super(TaskAdmin, self).save_model(request, obj, form, change)
-        self.run(str(obj.id), request)
+        if not change:
+            self.run(str(obj.id), request)
 
     def has_add_permission(self, request):
         if self.model._meta.model_name == 'task':

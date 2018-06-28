@@ -104,7 +104,6 @@ class Task(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='+', on_delete=models.SET_NULL)
     started_on = models.DateTimeField(_('started on'), null=True)
     completed_on = models.DateTimeField(_('completed on'), null=True)
-    verbosity = models.IntegerField(_('verbosity'), null=True, blank=True, default=None)
     job_id = models.CharField(_('job id'), max_length=128, null=False, blank=True)
     status = models.CharField(_('status'), max_length=128, null=False, blank=False, db_index=True,
         choices=TASK_STATUS_CHOICES, default=DEFAULT_TASK_STATUS_VALUE)
@@ -128,7 +127,11 @@ class Task(models.Model):
         if self.description:
             return self.description
         return str(self.id)
-        #return self.get_child()._meta.verbose_name
+        # return self.get_child()._meta.verbose_name
+
+    @property
+    def verbosity(self):
+        return self.DEFAULT_VERBOSITY
 
     @classmethod
     def get_task_from_id(cls, task_id, timeout=1000, retry_count=10):
@@ -191,7 +194,6 @@ class Task(models.Model):
             'started_on_display': format_datetime(self.started_on, include_time=True),
             'completed_on': self.completed_on.isoformat() if self.completed_on else None,
             'completed_on_display': format_datetime(self.completed_on, include_time=True),
-            'verbosity': self.verbosity,
             'job_id': self.job_id,
             'status': self.status,
             'status_display': self.status_display(),
@@ -206,9 +208,6 @@ class Task(models.Model):
         }
 
     def save(self, *args, **kwargs):
-        if self.verbosity is None:
-            self.verbosity = self.DEFAULT_VERBOSITY
-
         if self.LOG_TO_FIELD:
             text = self.log_stream.getvalue()
             if len(text):

@@ -189,6 +189,17 @@ Run worker(s):
             from .jobs import SendEmailJob
             return SendEmailJob
 
+You can change the `verbosity` dinamically by overridding the verbosity property:
+
+.. code:: python
+
+    class SendEmailTask(Task):
+
+        @property
+        def verbosity(self):
+            #return self.DEFAULT_VERBOSITY
+            return 1  # either 0, 1 or 2
+
 **Sample Job**
 
 .. code:: python

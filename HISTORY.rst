@@ -3,6 +3,10 @@
 History
 =======
 
+v1.2.2
+------
+* property to change verbosity dinamically
+
 v1.2.1
 ------
 * util revoke_pending_tasks() added
