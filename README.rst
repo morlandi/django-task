@@ -95,6 +95,7 @@ Starting from version 0.3.0, some conveniences have been added:
 
         @classmethod
         def run(job_class, task_class, task_id):
+            job_trace('job.run() enter')
             task = None
             result = 'SUCCESS'
             failure_reason = ''
@@ -113,6 +114,9 @@ Starting from version 0.3.0, some conveniences have been added:
                 job_class.execute(job, task)
 
             except Exception as e:
+                job_trace('ERROR: %s' % str(e))
+                job_trace(traceback.format_exc())
+
                 if task:
                     task.log(logging.ERROR, str(e))
                     task.log(logging.ERROR, traceback.format_exc())
@@ -122,11 +126,20 @@ Starting from version 0.3.0, some conveniences have been added:
             finally:
                 if task:
                     task.set_status(status=result, failure_reason=failure_reason)
+                try:
+                    job_class.on_complete(job, task)
+                except Exception as e:
+                    job_trace('NESTED ERROR: Job.on_completed() raises error "%s"' % str(e))
+                    job_trace(traceback.format_exc())
+            job_trace('job.run() leave')
+
+        @staticmethod
+        def on_complete(job, task):
+            pass
 
         @staticmethod
         def execute(job, task):
             pass
-
 
 so you can now replace the jobfunc with a simplyfied Job-derived class;
 for example:
@@ -142,6 +155,8 @@ for example:
             for i in range(0, num_beans):
                 time.sleep(0.01)
                 task.set_progress((i + 1) * 100 / num_beans, step=10)
+
+You might also override `on_complete()` to execute cleanup actions after job completion.
 
 
 **Execute**
