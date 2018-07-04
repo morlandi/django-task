@@ -202,27 +202,16 @@ class TaskAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         super(TaskAdmin, self).save_model(request, obj, form, change)
-        if not change:
-            self.run(str(obj.id), request)
+        # v1.2.3: we postpone autorun to response_add() to have M2M task parameters (if any) ready
+        # if not change:
+        #     self.run(str(obj.id), request)
+
+    def response_add(self, request, obj, post_url_continue=None):
+        response = super().response_add(request, obj, post_url_continue)
+        self.run(str(obj.id), request)
+        return response
 
     def has_add_permission(self, request):
         if self.model._meta.model_name == 'task':
             return False
         return super(TaskAdmin, self).has_add_permission(request)
-
-################################################################################
-#  Moved to "example" app
-#
-# @admin.register(CountBeansTask)
-# class CountBeansTaskAdmin(TaskAdmin):
-#
-#     def get_list_display(self, request):
-#         list_display = super(CountBeansTaskAdmin, self).get_list_display(request)
-#         return list_display + ['num_beans', ]
-#
-#
-# @admin.register(SendEmailTask)
-# class SendEmailTaskAdmin(TaskAdmin):
-#
-#     pass
-#

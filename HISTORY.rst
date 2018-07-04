@@ -3,6 +3,11 @@
 History
 =======
 
+v1.2.3
+------
+* TaskAdmin: postpone autorun to response_add() to have M2M task parameters (if any) ready
+* Task.clone() supports M2M parameters
+
 v1.2.2
 ------
 * property to change verbosity dinamically

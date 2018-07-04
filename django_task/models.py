@@ -220,18 +220,56 @@ class Task(models.Model):
         super(Task, self).save(*args, **kwargs)
 
     def clone(self, request=None):
-        obj = self._meta.model.objects.get(id=self.id)
-        obj.id = uuid.uuid4()
-        obj.created_on = datetime.datetime.now()
-        obj.created_by = request.user if request is not None else None
-        obj.started_on = None
-        obj.completed_on = None
-        obj.job_id = ''
-        obj.status = Task.DEFAULT_TASK_STATUS_VALUE
-        obj.failure_reason = ''
-        obj.progress = None
-        obj.save()
-        return obj
+
+        duplicate = self._meta.model.objects.get(id=self.id)
+        duplicate.id = uuid.uuid4()
+        duplicate.created_on = datetime.datetime.now()
+        duplicate.created_by = request.user if request is not None else None
+        duplicate.started_on = None
+        duplicate.completed_on = None
+        duplicate.job_id = ''
+        duplicate.status = Task.DEFAULT_TASK_STATUS_VALUE
+        duplicate.failure_reason = ''
+        duplicate.progress = None
+
+        duplicate.save()
+
+        # Also duplicate related objects
+        # Adapted from: https://github.com/team23/django_cloneable/blob/master/django_cloneable/models.py
+        dirty = False
+
+        for field in self._meta.many_to_many:
+            # handle m2m using through
+            if field.remote_field.through and not field.remote_field.through._meta.auto_created:
+                print('*** WARNING: m2m using through not supported yet ***')
+                # # through-model must be cloneable
+                # if hasattr(field.rel.through, 'clone'):
+                #     qs = field.rel.through._default_manager.filter(
+                #         **{field.m2m_field_name(): self.instance})
+                #     for m2m_obj in qs:
+                #         m2m_obj.clone(attrs={
+                #             field.m2m_field_name(): duplicate
+                #         })
+                # else:
+                #     qs = field.rel.through._default_manager.filter(
+                #         **{field.m2m_field_name(): self.instance})
+                #     for m2m_obj in qs:
+                #         # TODO: Allow switching to different helper?
+                #         m2m_clone_helper = ModelCloneHelper(m2m_obj)
+                #         m2m_clone_helper.clone(attrs={
+                #             field.m2m_field_name(): duplicate
+                #         })
+            # normal m2m, this is easy
+            else:
+                objs = getattr(self, field.attname).all()
+                #setattr(duplicate, field.attname, objs)
+                getattr(duplicate, field.attname).set(objs)
+                dirty = True
+
+            if dirty:
+                duplicate.save()
+
+        return duplicate
 
     ############################################################################
     # Duration, status and progress management
@@ -491,8 +529,9 @@ class Task(models.Model):
         """
         base_fieldnames = [f.name for f in Task._meta.get_fields()]
         all_fieldnames = [f.name for f in cls._meta.get_fields()]
-        fieldnames = [fname for fname in all_fieldnames
-            if fname != 'task_ptr' and fname not in base_fieldnames]
+        # fieldnames = [fname for fname in all_fieldnames
+        #     if fname != 'task_ptr' and fname not in base_fieldnames]
+        fieldnames = [fname for fname in all_fieldnames if fname not in base_fieldnames]
         return fieldnames
 
     def retrieve_params_as_dict(self):
@@ -515,36 +554,3 @@ def on_task_delete_cleanup(sender, instance, **kwargs):
     logfile = instance._logfile()
     if os.path.isfile(logfile):
         os.remove(logfile)
-
-
-# ################################################################################
-#  Moved to "example" app
-#
-# class CountBeansTask(Task):
-#
-#     num_beans = models.PositiveIntegerField(default=100)
-#
-#     TASK_QUEUE = settings.QUEUE_DEFAULT
-#     DEFAULT_VERBOSITY = 2
-#
-#     def start_job(self, request):
-#         from .jobs import count_beans
-#         #return count_beans.delay(**self.retrieve_params_as_dict())
-#         return count_beans.delay()
-#
-#
-# class SendEmailTask(Task):
-#
-#     sender = models.CharField(max_length=256, null=False, blank=False)
-#     recipients = models.TextField(null=False, blank=False,
-#         help_text='put addresses in separate rows')
-#     subject = models.CharField(max_length=256, null=False, blank=False)
-#     message = models.TextField(null=False, blank=True)
-#
-#     TASK_QUEUE = settings.QUEUE_LOW
-#     DEFAULT_VERBOSITY = 2
-#
-#     def start_job(self, request):
-#         from .jobs import send_email
-#         #return count_beans.delay(**self.retrieve_params_as_dict())
-#         return send_email.delay()
