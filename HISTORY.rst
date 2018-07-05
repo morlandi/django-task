@@ -3,6 +3,10 @@
 History
 =======
 
+v1.2.4
+------
+* API to create and run task via ajax
+
 v1.2.3
 ------
 * TaskAdmin: postpone autorun to response_add() to have M2M task parameters (if any) ready
