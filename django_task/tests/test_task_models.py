@@ -26,7 +26,7 @@ class CountBeansTestCase(django.test.TransactionTestCase):
 
         task = CountBeansTask.objects.create(num_beans=100)
         print('task.id: %s' % str(task.id))
-        job = task.run(async=False)
+        job = task.run(is_async=False)
         print('job.id: %s' % job.id)
 
         # print('Waiting for task completed:')

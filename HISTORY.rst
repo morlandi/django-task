@@ -3,6 +3,13 @@
 History
 =======
 
+v1.2.5
+------
+* Tested with Django 2.0 and Python 3.7
+* Rename `async` to `is_async` to support Python 3.7
+* DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE app setting added
+* example cleanup
+
 v1.2.4
 ------
 * API to create and run task via ajax

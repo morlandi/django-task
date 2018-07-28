@@ -8,6 +8,7 @@ import logging
 import sys
 import types
 import pprint
+import redis
 try:
     from cStringIO import StringIO      # Python 2
 except ImportError:
@@ -27,20 +28,21 @@ except:
     from django.core.urlresolvers import reverse
 from django.dispatch import receiver
 import django_rq
+import rq
 #from rq import get_current_job
 #from rq import Worker, Queue
 from .utils import format_datetime
 from .utils import get_model_from_id
 from .app_settings import ALWAYS_EAGER
 from .app_settings import LOG_ROOT
+from .app_settings import REDIS_URL
+from .app_settings import REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
 
 
 class Task(models.Model):
 
     class Meta:
         ordering = ('-created_on', )
-        verbose_name = u"Task"
-        verbose_name_plural = u"All Tasks"
         get_latest_by = "created_on"
         abstract = True
 
@@ -346,7 +348,7 @@ class Task(models.Model):
     def log_link_display(self):
         html = ''
         info = self._meta.app_label, self._meta.model_name
-        if os.path.exists(self._logfile()):
+        if self._logfile() is not None and os.path.exists(self._logfile()):
             url = reverse('admin:%s_%s_viewlogfile' % info, args=(self.id, ))
             html += '<a href="%s">%s</a>' % (url, "Download ")
         if self.log_text:
@@ -464,54 +466,41 @@ class Task(models.Model):
         """
         pass
 
-    # def check_worker_active_for_queue(self):
+    def check_worker_active_for_queue(self, queue):
+        # collect active workers
+        workers = rq.Worker.all(connection=redis.Redis.from_url(REDIS_URL))
+        # Retrieve active queues;
+        # make a flat list out of a list of lists
+        active_queue_names = sum([w.queue_names() for w in workers], [])
+        return queue.name in active_queue_names
 
-    #     #
-    #     # TODO: copied from sample project; verify
-    #     #
-
-    #     redis_connection = django_rq.get_connection(self.TASK_QUEUE)
-    #     # ???
-    #     #if len([x for x in Worker.all(connection=redis_conn) if settings.DJANGO_TEST_RQ_LOW_QUEUE in x.queue_names()]) == 0:
-    #     #     messages.add_message(self.request, messages.ERROR, )
-    #     workers = [worker for worker in Worker.all(connection=redis_connection) if self.TASK_QUEUE in worker.queue_names()]
-    #     if len(workers) <= 0:
-    #         raise Exception('%s "%s"' % (_('No active workers for queue'), self.TASK_QUEUE))
-
-    def run(self, async, request=None):
+    def run(self, is_async, request=None):
 
         if self.job_id:
             raise Exception('already scheduled for execution')
 
-        #self.check_worker_active_for_queue() !!!
-
-        # This has been refactored in v1.3.0
-        #
-        # job = None
-        # jobfunc = self.get_jobfunc()
-        # if ALWAYS_EAGER or not async:
-        #     queue = django_rq.get_queue(self.TASK_QUEUE, async=False)
-        #     job = queue.enqueue(jobfunc, self.id)
-        # else:
-        #     job = jobfunc.delay(self.id)
-
         if ALWAYS_EAGER:
-            async = False
+            is_async = False
 
-        self.mode = 'ASYNC' if async else 'SYNC'
+        self.mode = 'ASYNC' if is_async else 'SYNC'
         self.save(update_fields=['mode', ])
 
         # See: https://github.com/rq/django-rq
         if self.TASK_TIMEOUT > 0:
-            queue = django_rq.get_queue(self.TASK_QUEUE, async=async, default_timeout=self.TASK_TIMEOUT)
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async, default_timeout=self.TASK_TIMEOUT)
         else:
-            queue = django_rq.get_queue(self.TASK_QUEUE, async=async)
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async)
+
+        if REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE and is_async:
+            if not self.check_worker_active_for_queue(queue):
+                self.set_status('REJECTED', failure_reason='No active workers for queue', commit=True)
+                raise Exception('%s "%s"' % (_('No active workers for queue'), queue.name))
 
         # Now we accept either a jobfunc or a Job-derived class
         try:
             jobfunc_or_class = self.get_jobfunc()
             if isinstance(jobfunc_or_class, types.FunctionType):
-                jobfunc = jobfunc_or_class
+                jobfunc=jobfunc_or_class
                 job = queue.enqueue(jobfunc, self.id)
             else:
                 jobclass = jobfunc_or_class

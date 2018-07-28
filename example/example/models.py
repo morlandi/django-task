@@ -10,17 +10,12 @@ class CountBeansTask(Task):
     num_beans = models.PositiveIntegerField(default=100)
 
     TASK_QUEUE = settings.QUEUE_DEFAULT
+    #TASK_TIMEOUT = 10
     DEFAULT_VERBOSITY = 2
-
-    # def start_job(self, request):
-    #     from .jobs import count_beans
-    #     #return count_beans.delay(**self.retrieve_params_as_dict())
-    #     return count_beans.delay()
+    LOG_TO_FIELD = True
 
     @staticmethod
     def get_jobfunc():
-        # from .jobs import count_beans
-        # return count_beans
         from .jobs import CountBeansJob
         return CountBeansJob
 
@@ -35,15 +30,9 @@ class SendEmailTask(Task):
 
     TASK_QUEUE = settings.QUEUE_LOW
     DEFAULT_VERBOSITY = 2
-
-    # def start_job(self, request):
-    #     from .jobs import send_email
-    #     #return count_beans.delay(**self.retrieve_params_as_dict())
-    #     return send_email.delay()
+    LOG_TO_FILE = True
 
     @staticmethod
     def get_jobfunc():
-        # from .jobs import send_email
-        # return send_email
         from .jobs import SendEmailJob
         return SendEmailJob

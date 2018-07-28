@@ -438,14 +438,18 @@ DJANGOTASK_LOG_ROOT
     Example: os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
 
 DJANGOTASK_ALWAYS_EAGER
-
     When True, all task are execute syncronously (useful for debugging and unit testing).
 
     Default: False
 
 DJANGOTASK_JOB_TRACE_ENABLED
-
     Enables low level tracing in Job.run() - for debugging challenging race conditions
+
+    Default: False
+
+DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
+    Rejects task if not active worker is available for the specific task queue
+    when task.run() is called
 
     Default: False
 

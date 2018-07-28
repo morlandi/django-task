@@ -70,7 +70,7 @@ def task_add_api(request):
             task.save()
 
         json_response['task_id'] = str(task.id)
-        task.run(async=True)
+        task.run(is_async=True)
 
         response_status = 200
 
