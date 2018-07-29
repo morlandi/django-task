@@ -61,7 +61,9 @@ setup(
     zip_safe=False,
     keywords='django-task',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
         'Framework :: Django',
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 2.0',
