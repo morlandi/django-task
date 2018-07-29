@@ -40,9 +40,7 @@ INSTALLED_APPS = [
     #'django_task.apps.DjangoTaskConfig',
     'django_task',
     'example',
-
-    # if your app has other dependencies that need to be added to the site
-    # they should be added here
+    'tasks',
 ]
 
 MIDDLEWARE = [
@@ -154,7 +152,7 @@ RQ_QUEUES = {
 
 RQ_SHOW_ADMIN_LINK = True
 
-DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'protected', 'tasklog'))
+DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'media', 'tasklog'))
 DJANGOTASK_JOB_TRACE_ENABLED = True
 #DJANGOTASK_ALWAYS_EAGER = True
 DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True

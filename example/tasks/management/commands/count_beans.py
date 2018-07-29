@@ -8,5 +8,5 @@ class Command(TaskCommand):
         parser.add_argument('num_beans', type=int)
 
     def handle(self, *args, **options):
-        from example.models import CountBeansTask
+        from tasks.models import CountBeansTask
         self.run_task(CountBeansTask, **options)
