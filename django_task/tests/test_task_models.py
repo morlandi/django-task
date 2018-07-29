@@ -1,7 +1,7 @@
 import time
 import django
 import sys
-from tasks.models import CountBeansTask
+from django_task.tests.models import CountBeansTask
 
 
 class CountBeansTestCase(django.test.TransactionTestCase):
