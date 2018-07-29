@@ -11,7 +11,7 @@ Django Task
 .. image:: https://codecov.io/gh/morlandi/django-task/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/morlandi/django-task
 
-A Django app to run new background tasks from either admin or cron, and inspect task history from admin
+A Django app to run new background tasks from either admin or cron, and inspect task history from admin; based on django-rq
 
 Quickstart
 ----------
@@ -46,9 +46,10 @@ Features
 
 **Purposes**
 
-    - create async tasks programmatically
-    - create and monitor async tasks from admin
-    - log all tasks in the database for later inspection
+- create async tasks either programmatically or from admin
+- monitor async tasks from admin
+- log all tasks in the database for later inspection
+- optionally save task-specific logs in a TextField and/or in a FileField
 
 **Details**
 
