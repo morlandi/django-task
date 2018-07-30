@@ -69,9 +69,9 @@ Features
 
    - job execution is triggered by task.run(is_async)
    - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
-     on start, job will update task status to 'STARTED' and save job.id for reference
-     during execution, the job can update the progress indicator
-     on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
+   - on start, job will update task status to 'STARTED' and save job.id for reference
+   - during execution, the job can update the progress indicator
+   - on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
    - See example.jobs.count_beans for an example
 
 
