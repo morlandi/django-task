@@ -214,9 +214,11 @@ example:
 
         @staticmethod
         def on_complete(job, task):
-            if task.status != 'SUCCESS' or task.error_counter > 0:
-                task.alarm = BaseTask.ALARM_STATUS_ALARMED
-                task.save(update_fields=['alarm', ])
+            print('task "%s" completed with: %s' % (str(task.id), task.status))
+            # An more realistic example from a real project ...
+            # if task.status != 'SUCCESS' or task.error_counter > 0:
+            #    task.alarm = BaseTask.ALARM_STATUS_ALARMED
+            #    task.save(update_fields=['alarm', ])
 
 
 **Execute**
