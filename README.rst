@@ -1,6 +1,6 @@
-=============================
-Django Task
-=============================
+===========
+django-task
+===========
 
 .. image:: https://badge.fury.io/py/django-task.svg
     :target: https://badge.fury.io/py/django-task
@@ -56,23 +56,76 @@ Features
 1. each specific job is described my a Model derived from models.Task, which
    is responsible for:
 
-    - selecting the name for the consumer queue among available queues
-    - collecting and saving all parameters required by the associated job
-    - running the specific job asyncronously
+   - selecting the name for the consumer queue among available queues
+   - collecting and saving all parameters required by the associated job
+   - running the specific job asyncronously
 
 2. a new job can be run either:
 
-    - creating a Task from the Django admin
-    - creating a Task from code, then calling Task.run()
+   - creating a Task from the Django admin
+   - creating a Task from code, then calling Task.run()
 
 3. job execution workflow:
 
-    - job execution is triggered by task.run(is_async)
-    - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
-    - on start, job will update task status to 'STARTED' and save job.id for reference
-    - during execution, the job can update the progress indicator
-    - on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
-    - See example.jobs.count_beans for an example
+   - job execution is triggered by task.run(is_async)
+   - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
+     on start, job will update task status to 'STARTED' and save job.id for reference
+     during execution, the job can update the progress indicator
+     on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
+   - See example.jobs.count_beans for an example
+
+
+Screenshots
+-----------
+
+.. image:: example/etc/screenshot_001.png
+
+.. image:: example/etc/screenshot_002.png
+
+
+App settings
+------------
+
+DJANGOTASK_LOG_ROOT
+    Path for log files.
+
+    Default: None
+
+    Example: os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
+
+DJANGOTASK_ALWAYS_EAGER
+    When True, all task are execute syncronously (useful for debugging and unit testing).
+
+    Default: False
+
+DJANGOTASK_JOB_TRACE_ENABLED
+    Enables low level tracing in Job.run() - for debugging challenging race conditions
+
+    Default: False
+
+DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
+    Rejects task if not active worker is available for the specific task queue
+    when task.run() is called
+
+    Default: False
+
+REDIS_URL
+
+    Redis server to connect to
+
+    Default: 'redis://localhost:6379/0'
+
+
+Running Tests
+-------------
+
+Does the code actually work?
+
+::
+
+    source <YOURVIRTUALENV>/bin/activate
+    (myenv) $ pip install tox
+    (myenv) $ tox
 
 
 Support Job class
@@ -142,8 +195,11 @@ Starting from version 0.3.0, some conveniences have been added:
         def execute(job, task):
             pass
 
-so you can now replace the jobfunc with a simplyfied Job-derived class;
-for example:
+so you can either override `run()` to implement a different logic,
+or (in most cases) just supply your own `execute()` method, and optionally
+override `on_complete()` to execute cleanup actions after job completion;
+
+example:
 
 .. code :: python
 
@@ -157,7 +213,11 @@ for example:
                 time.sleep(0.01)
                 task.set_progress((i + 1) * 100 / num_beans, step=10)
 
-You might also override `on_complete()` to execute cleanup actions after job completion.
+        @staticmethod
+        def on_complete(job, task):
+            if task.status != 'SUCCESS' or task.error_counter > 0:
+                task.alarm = BaseTask.ALARM_STATUS_ALARMED
+                task.save(update_fields=['alarm', ])
 
 
 **Execute**
@@ -196,12 +256,12 @@ Run worker(s):
 
         TASK_QUEUE = settings.QUEUE_LOW
         TASK_TIMEOUT = 60
+        LOG_TO_FIELD = True
+        LOG_TO_FILE = False
         DEFAULT_VERBOSITY = 2
 
         @staticmethod
         def get_jobfunc():
-            #from .jobs import send_email
-            #return send_email
             from .jobs import SendEmailJob
             return SendEmailJob
 
@@ -240,54 +300,6 @@ You can change the `verbosity` dinamically by overridding the verbosity property
             message = params['message']
             from django.core.mail import send_mail
             send_mail(subject, message, sender, recipient_list)
-
-
-    # from __future__ import print_function
-    # import redis
-    # import logging
-    # import traceback
-    # from django.conf import settings
-    # from .models import SendEmailTask
-    # from rq import get_current_job
-    # from django_rq import job
-
-    # @job(SendEmailTask.TASK_QUEUE)
-    # def send_email(task_id):
-
-    #     task = None
-    #     result = 'SUCCESS'
-    #     failure_reason = ''
-
-    #     try:
-
-    #         # this raises a "Could not resolve a Redis connection" exception in sync mode
-    #         #job = get_current_job()
-    #         job = get_current_job(connection=redis.Redis.from_url(settings.REDIS_URL))
-
-    #         #task = SendEmailTask.objects.get(id=task_id)
-    #         task = SendEmailTask.get_task_from_id(task_id)
-    #         task.set_status(status='STARTED', job_id=job.get_id())
-
-    #         params = task.retrieve_params_as_dict()
-
-    #         recipient_list = params['recipients'].split()
-    #         sender = params['sender'].strip()
-    #         subject = params['subject'].strip()
-    #         message = params['message']
-
-    #         from django.core.mail import send_mail
-    #         send_mail(subject, message, sender, recipient_list)
-
-    #     except Exception as e:
-    #         if task:
-    #             task.log(logging.ERROR, str(e))
-    #             task.log(logging.ERROR, traceback.format_exc())
-    #         result = 'FAILURE'
-    #         failure_reason = str(e)
-
-    #     finally:
-    #         if task:
-    #             task.set_status(status=result, failure_reason=failure_reason)
 
 **Sample management command**
 
@@ -419,57 +431,6 @@ for example:
         def handle(self, *args, **options):
             from tasks.models import CountBeansTask
             self.run_task(CountBeansTask, **options)
-
-Screenshots
------------
-
-.. image:: example/etc/screenshot_001.png
-
-.. image:: example/etc/screenshot_002.png
-
-
-App settings
-------------
-
-DJANGOTASK_LOG_ROOT
-    Path for log files.
-
-    Default: None
-
-    Example: os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
-
-DJANGOTASK_ALWAYS_EAGER
-    When True, all task are execute syncronously (useful for debugging and unit testing).
-
-    Default: False
-
-DJANGOTASK_JOB_TRACE_ENABLED
-    Enables low level tracing in Job.run() - for debugging challenging race conditions
-
-    Default: False
-
-DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
-    Rejects task if not active worker is available for the specific task queue
-    when task.run() is called
-
-    Default: False
-
-REDIS_URL
-
-    Redis server to connect to
-
-    Default: 'redis://localhost:6379/0'
-
-Running Tests
--------------
-
-Does the code actually work?
-
-::
-
-    source <YOURVIRTUALENV>/bin/activate
-    (myenv) $ pip install tox
-    (myenv) $ tox
 
 Credits
 -------
