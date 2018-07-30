@@ -110,7 +110,6 @@ DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
     Default: False
 
 REDIS_URL
-
     Redis server to connect to
 
     Default: 'redis://localhost:6379/0'
