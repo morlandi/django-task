@@ -63,8 +63,8 @@ class TaskAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         fields = super(TaskAdmin, self).get_fieldsets(request, obj)[0][1]['fields']
         base_fieldnames = [f.name for f in Task._meta.get_fields()]
-        primary_fields = [f for f in fields if f not in base_fieldnames]
-        secondary_fields = [f for f in fields if f not in primary_fields]
+        primary_fields = list(set([f for f in fields if f not in base_fieldnames]))
+        secondary_fields = list(set([f for f in fields if f not in primary_fields]))
         fieldsets = [
             (None, {'fields': primary_fields}),
         ]
