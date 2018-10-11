@@ -61,10 +61,18 @@ class TaskAdmin(admin.ModelAdmin):
         return list_display
 
     def get_fieldsets(self, request, obj=None):
+
+        def remove_duplicates(seq):
+            # order preserving
+            # https://www.peterbe.com/plog/uniqifiers-benchmark
+            noDupes = []
+            [noDupes.append(i) for i in seq if not noDupes.count(i)]
+            return noDupes
+
         fields = super(TaskAdmin, self).get_fieldsets(request, obj)[0][1]['fields']
         base_fieldnames = [f.name for f in Task._meta.get_fields()]
-        primary_fields = list(set([f for f in fields if f not in base_fieldnames]))
-        secondary_fields = list(set([f for f in fields if f not in primary_fields]))
+        primary_fields = remove_duplicates([f for f in fields if f not in base_fieldnames])
+        secondary_fields = remove_duplicates([f for f in fields if f not in primary_fields])
         fieldsets = [
             (None, {'fields': primary_fields}),
         ]
