@@ -3,6 +3,23 @@
 History
 =======
 
+v1.3.4
+------
+* javascript helper views
+
+v1.3.3
+------
+* make sure fields are unique in TaskAdmin fieldsets
+
+v1.3.1
+------
+* unit tests verified with Python 2.7/3.6/3.7 and Django 1.10/2.0
+
+v1.3.0
+------
+* cleanup
+* classify as production/stable
+
 v1.2.5
 ------
 * Tested with Django 2.0 and Python 3.7

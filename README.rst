@@ -433,6 +433,112 @@ for example:
             from tasks.models import CountBeansTask
             self.run_task(CountBeansTask, **options)
 
+
+Javascript helpers
+------------------
+
+A few utility views have been supplied for interacting with tasks from javascript.
+
+tasks_info_api
+..............
+
+Retrieve informations about a list of existing tasks
+
+Sample usage:
+
+.. code:: javascript
+
+    var tasks = [{
+        id: 'c50bf040-a886-4aed-bf41-4ae794db0941',
+        model: 'tasks.devicetesttask'
+    }, {
+        id: 'e567c651-c8d5-4dc7-9cbf-860988f55022',
+        model: 'tasks.devicetesttask'
+    }];
+
+    $.ajax({
+        url: '/django_task/info/',
+        data: JSON.stringify(tasks),
+        cache: false,
+        type: 'post',
+        dataType: 'json',
+        headers: {'X-CSRFToken': getCookie('csrftoken')}
+    }).done(function(data) {
+        console.log('data: %o', data);
+    });
+
+Result::
+
+    [
+      {
+        "id": "c50bf040-a886-4aed-bf41-4ae794db0941",
+        "created_on": "2018-10-11T17:45:14.399491+00:00",
+        "created_on_display": "10/11/2018 19:45:14",
+        "created_by": "4f943f0b-f5a3-4fd8-bb2e-451d2be107e2",
+        "started_on": null,
+        "started_on_display": "",
+        "completed_on": null,
+        "completed_on_display": "",
+        "job_id": "",
+        "status": "PENDING",
+        "status_display": "<div class=\"task_status\" data-task-model=\"tasks.devicetesttask\" data-task-id=\"c50bf040-a886-4aed-bf41-4ae794db0941\" data-task-status=\"PENDING\" data-task-complete=\"0\">PENDING</div>",
+        "log_link_display": "",
+        "failure_reason": "",
+        "progress": null,
+        "progress_display": "-",
+        "completed": false,
+        "duration": null,
+        "duration_display": "",
+        "extra_fields": {
+        }
+      },
+      ...
+    ]
+
+task_add_api
+............
+
+Create and run a new task based on specified parameters
+
+Expected parameters:
+
+    - 'task-model' = "<app_name>.<model_name>"
+    - ... task parameters ...
+
+Returns the id of the new task
+
+TODO: provide a real usage example
+
+task_run_api
+............
+
+Schedule execution of specified task.
+
+Returns job.id or throws error (400).
+
+Parameters:
+
+- app_label
+- model_name
+- pk
+- is_async (0 or 1, default=1)
+
+Sample usage:
+
+.. code:: javascript
+
+    var task_id = 'c50bf040-a886-4aed-bf41-4ae794db0941';
+
+    $.ajax({
+        url: sprintf('/django_task/tasks/devicetesttask/%s/run/', task_id),
+        cache: false,
+        type: 'get'
+    }).done(function(data) {
+        console.log('data: %o', data);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        display_server_error(jqXHR.responseText);
+    });
+
 Credits
 -------
 
