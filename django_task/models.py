@@ -372,7 +372,8 @@ class Task(models.Model):
             else:
                 commit = False
         else:
-            if value != (self.progress and self.progress or 0):
+            #if value != (self.progress and self.progress or 0):
+            if value != self.progress:
                 self.progress = value
             else:
                 commit = False

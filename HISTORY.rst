@@ -6,6 +6,7 @@ History
 v1.3.4
 ------
 * javascript helper views
+* fix Task.set_progress(0)
 
 v1.3.3
 ------
