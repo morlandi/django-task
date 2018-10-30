@@ -390,6 +390,8 @@ for example:
     RQ_SHOW_ADMIN_LINK = False
     DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
     DJANGOTASK_ALWAYS_EAGER = False
+    DJANGOTASK_JOB_TRACE_ENABLED = False
+    DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
 
 then run worker as follows:
 
