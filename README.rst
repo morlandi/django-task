@@ -266,7 +266,24 @@ Run worker(s):
             from .jobs import SendEmailJob
             return SendEmailJob
 
-You can change the `verbosity` dinamically by overridding the verbosity property:
+You can change the `verbosity` dynamically by overridding the verbosity property:
+
+
+When using **LOG_TO_FILE = True**, you might want to add a cleanup handler to
+remove the log file when the corresponding record is deleted::
+
+    import os
+    from django.dispatch import receiver
+
+    @receiver(models.signals.post_delete, sender=ImportaCantieriTask)
+    def on_sendemailtask_delete_cleanup(sender, instance, **kwargs):
+        """
+        Autodelete logfile on Task delete
+        """
+        logfile = instance._logfile()
+        if os.path.isfile(logfile):
+            os.remove(logfile)
+
 
 .. code:: python
 
