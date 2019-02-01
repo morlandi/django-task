@@ -3,6 +3,10 @@
 History
 =======
 
+v1.3.5
+------
+* Readme updated
+
 v1.3.4
 ------
 * javascript helper views
