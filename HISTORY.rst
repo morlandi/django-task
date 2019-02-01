@@ -3,6 +3,10 @@
 History
 =======
 
+v0.3.9
+------
+* Rename `async` to `is_async` to support Python 3.7
+
 0.1.12
 ------
 * Deferred Task retrieval to avoid job vs. Task race condition

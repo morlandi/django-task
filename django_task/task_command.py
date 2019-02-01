@@ -40,8 +40,8 @@ class TaskCommand(BaseCommand):
             param_names = TaskClass.retrieve_param_names()
             params = dict([item for item in options.items() if item[0] in param_names])
             task = TaskClass.objects.create(**params)
-            async = not options.get('sync')
-            task.run(async=async)
+            is_async = not options.get('sync')
+            task.run(is_async=is_async)
         except Exception as e:
             raise CommandError('[%s] ERROR: %s' % (timezone.now().isoformat(), str(e)))
 

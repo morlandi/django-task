@@ -149,7 +149,7 @@ class TaskAdmin(admin.ModelAdmin):
     def run(self, object_id, request):
         try:
             obj = get_object_by_uuid_or_404(self.model, object_id)
-            job = obj.run(async=True, request=request)
+            job = obj.run(is_async=True, request=request)
             messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (object_id, job.get_id()))
         except Exception as e:
             messages.error(request, str(e))
@@ -163,7 +163,7 @@ class TaskAdmin(admin.ModelAdmin):
             source_obj = get_object_by_uuid_or_404(self.model, object_id)
             clone = source_obj.clone(request)
             #messages.info(request, _('Task "%s" cloned to "%s"') % (source_obj.id, clone.id))
-            job = clone.run(async=True, request=request)
+            job = clone.run(is_async=True, request=request)
             messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (clone.id, job.get_id()))
         except Exception as e:
             messages.error(request, str(e))

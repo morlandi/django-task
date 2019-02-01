@@ -66,7 +66,7 @@ Features
 
 3. job execution workflow:
 
-    - job execution is triggered by task.run(async)
+    - job execution is triggered by task.run(is_async)
     - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
     - on start, job will update task status to 'STARTED' and save job.id for reference
     - during execution, the job can update the progress indicator

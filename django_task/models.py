@@ -410,7 +410,7 @@ class Task(models.Model):
     #     if len(workers) <= 0:
     #         raise Exception('%s "%s"' % (_('No active workers for queue'), self.TASK_QUEUE))
 
-    def run(self, async, request=None):
+    def run(self, is_async, request=None):
 
         if self.job_id:
             raise Exception('already scheduled for execution')
@@ -428,16 +428,16 @@ class Task(models.Model):
         #     job = jobfunc.delay(self.id)
 
         if ALWAYS_EAGER:
-            async = False
+            is_async = False
 
-        self.mode = 'ASYNC' if async else 'SYNC'
+        self.mode = 'ASYNC' if is_async else 'SYNC'
         self.save(update_fields=['mode', ])
 
         # See: https://github.com/rq/django-rq
         if self.TASK_TIMEOUT > 0:
-            queue = django_rq.get_queue(self.TASK_QUEUE, async=async, default_timeout=self.TASK_TIMEOUT)
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async, default_timeout=self.TASK_TIMEOUT)
         else:
-            queue = django_rq.get_queue(self.TASK_QUEUE, async=async)
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async)
 
         # Now we accept either a jobfunc or a Job-derived class
         try:
