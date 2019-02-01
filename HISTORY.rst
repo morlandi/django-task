@@ -3,6 +3,10 @@
 History
 =======
 
+v0.3.10
+-------
+* Update requirements (django-rq>=1.2.0)
+
 v0.3.9
 ------
 * Rename `async` to `is_async` to support Python 3.7
