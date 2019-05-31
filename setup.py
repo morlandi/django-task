@@ -49,6 +49,7 @@ setup(
     version=version,
     description="""A Django app to run new background tasks from either admin or cron, and inspect task history from admin; based on django-rq""",
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author='Mario Orlandi',
     author_email='morlandi@brainstorm.it',
     url='https://github.com/morlandi/django-task',
