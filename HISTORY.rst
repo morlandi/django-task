@@ -130,7 +130,7 @@ v0.1.13
 * minor fixes
 
 v0.1.12
-------
+-------
 * Deferred Task retrieval to avoid job vs. Task race condition
 * Improved Readme
 
