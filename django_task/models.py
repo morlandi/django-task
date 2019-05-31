@@ -326,7 +326,7 @@ class Task(models.Model):
             self.failure_reason = failure_reason[:self._meta.get_field('failure_reason').max_length]
             update_fields.append('failure_reason')
 
-        self.log(logging.INFO, '%s [task: "%s", job: "%s"]' % (status, self.id, self.job_id))
+        self.log(logging.INFO, '%s [queue: "%s", task: "%s", job: "%s"]' % (status, self.TASK_QUEUE, self.id, self.job_id))
         if self.check_status_complete():
             #self.log(logging.INFO, 'params: %s' % str(self.retrieve_params_as_dict()))
             self.log(logging.DEBUG, 'params: \n' + pprint.pformat(self.retrieve_params_as_dict()))
@@ -475,6 +475,15 @@ class Task(models.Model):
         active_queue_names = sum([w.queue_names() for w in workers], [])
         return queue.name in active_queue_names
 
+    def get_queue(self):
+        # See: https://github.com/rq/django-rq
+        is_async = self.mode == 'ASYNC'
+        if self.TASK_TIMEOUT > 0:
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async, default_timeout=self.TASK_TIMEOUT)
+        else:
+            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async)
+        return queue
+
     def run(self, is_async, request=None):
 
         if self.job_id:
@@ -486,11 +495,7 @@ class Task(models.Model):
         self.mode = 'ASYNC' if is_async else 'SYNC'
         self.save(update_fields=['mode', ])
 
-        # See: https://github.com/rq/django-rq
-        if self.TASK_TIMEOUT > 0:
-            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async, default_timeout=self.TASK_TIMEOUT)
-        else:
-            queue = django_rq.get_queue(self.TASK_QUEUE, is_async=is_async)
+        queue = self.get_queue()
 
         if REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE and is_async:
             if not self.check_worker_active_for_queue(queue):

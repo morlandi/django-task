@@ -3,6 +3,10 @@
 History
 =======
 
+v1.3.6
+------
+* log queue name
+
 v1.3.5
 ------
 * Readme updated
