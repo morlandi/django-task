@@ -86,7 +86,6 @@ def revoke_pending_tasks():
         n = queryset.count()
         print('revoking %s objects (%d) ...' % (model.__name__, n))
         #model.objects.all().delete()
-        import ipdb; ipdb.set_trace()
         queryset.update(status='REVOKED')
         counter += n
 

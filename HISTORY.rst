@@ -4,6 +4,18 @@
 History
 =======
 
+v1.3.9
+------
+* removed forgotten pdb.set_trace() in revoke_pending_tasks()
+
+v1.3.8
+------
+* cleanup
+
+v1.3.7
+------
+* cleanup
+
 v1.3.6
 ------
 * log queue name
