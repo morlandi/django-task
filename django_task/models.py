@@ -31,6 +31,7 @@ import django_rq
 import rq
 #from rq import get_current_job
 #from rq import Worker, Queue
+from .exceptions import TaskError
 from .utils import format_datetime
 from .utils import get_model_from_id
 from .app_settings import ALWAYS_EAGER
@@ -487,7 +488,7 @@ class Task(models.Model):
     def run(self, is_async, request=None):
 
         if self.job_id:
-            raise Exception('already scheduled for execution')
+            raise TaskError('already scheduled for execution')
 
         if ALWAYS_EAGER:
             is_async = False
@@ -500,7 +501,7 @@ class Task(models.Model):
         if REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE and is_async:
             if not self.check_worker_active_for_queue(queue):
                 self.set_status('REJECTED', failure_reason='No active workers for queue', commit=True)
-                raise Exception('%s "%s"' % (_('No active workers for queue'), queue.name))
+                raise TaskError('%s "%s"' % (_('No active workers for queue'), queue.name))
 
         # Now we accept either a jobfunc or a Job-derived class
         try:
@@ -513,7 +514,8 @@ class Task(models.Model):
                 #assert isinstance(jobclass, Job):
                 job = queue.enqueue(jobclass.run, task_class=self.__class__, task_id=self.id)
         except:
-            raise Exception('Provide either a function or a class derived from Job')
+            self.log(logging.ERROR, 'Provide either a function or a class derived from Job')
+            raise
 
         return job
 

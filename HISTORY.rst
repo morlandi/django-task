@@ -4,6 +4,10 @@
 History
 =======
 
+1.3.10
+------
+* Use exceptions.TaskError class when raising specific exceptions
+
 v1.3.9
 ------
 * removed forgotten pdb.set_trace() in revoke_pending_tasks()
