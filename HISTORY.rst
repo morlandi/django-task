@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.0
+-----
+* Update requirements (Django >= 2.0, django-rq>=2.0)
+
 1.3.10
 ------
 * Use exceptions.TaskError class when raising specific exceptions
