@@ -68,7 +68,6 @@ class Task(models.Model):
         'REJECTED',     #: Task was rejected (only used in events).
         'RETRY',        #: Task is waiting for retry.
         'IGNORED',
-        'REJECTED',
     )
 
     TASK_STATUS_VALUES = TASK_STATUS_PENDING_VALUES + TASK_STATUS_COMPLETED_VALUES

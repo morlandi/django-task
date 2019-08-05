@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.1
+-----
+* Cleanup: remove redundant REJECTED status
+
 1.4.0
 -----
 * Update requirements (Django >= 2.0, django-rq>=2.0)
