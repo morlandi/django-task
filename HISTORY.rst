@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.2
+-----
+* tasks_info_api() optimized to use a single query
+
 1.4.1
 -----
 * Cleanup: remove redundant REJECTED status

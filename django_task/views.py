@@ -68,15 +68,41 @@ def tasks_info_api(request):
     ]
     """
 
+
     # if not request.is_ajax():
     #     raise PermissionDenied
     try:
         json_response = []
         rows = json.loads(request.body.decode('utf-8'))
-        for row in rows:
-            task_model = apps.get_model(row['model'])
-            task_obj = task_model.objects.get(id=row['id'])
-            json_response.append(task_obj.as_dict())
+
+        # for row in rows:
+        #     task_model = apps.get_model(row['model'])
+        #     task_obj = task_model.objects.get(id=row['id'])
+        #     json_response.append(task_obj.as_dict())
+
+        # 2019-08-07 optimization
+        # TODO: are we still using "extra_fields" somewhere ? ... if so, we
+        # should either add them to the "columns" list, or remove only()
+
+        columns = ['id', 'created_on', 'created_by', 'started_on', 'completed_on',
+            'job_id', 'status', 'failure_reason', 'progress', 'log_text', ]
+
+        if len(rows) > 0:
+            distinct_models = list(set([row['model'] for row in rows]))
+            if len(distinct_models) == 1:
+                # if a single model is involved, as normally happens,
+                # we can use a single query
+                task_model = apps.get_model(distinct_models[0])
+                ids = [row['id'] for row in rows]
+                queryset = task_model.objects.filter(id__in=ids).select_related('created_by').only(*columns)
+                for task_obj in queryset:
+                    json_response.append(task_obj.as_dict())
+            else:
+                for row in rows:
+                    task_model = apps.get_model(row['model'])
+                    queryset = task_model.objects.filter(id=row['id']).select_related('created_by').only(*columns)
+                    task_obj = queryset[0]
+                    json_response.append(task_obj.as_dict())
         response_status = 200
     except Exception as e:
         json_response = str(e)
