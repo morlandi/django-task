@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.3
+-----
+* restore compatibility with Django 1.11; upgrade rq and django-rq requirements
+
 1.4.2
 -----
 * tasks_info_api() optimized to use a single query
