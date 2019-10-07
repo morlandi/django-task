@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.4
+-----
+* Task.get_logger() is now publicly available
+
 1.4.3
 -----
 * restore compatibility with Django 1.11; upgrade rq and django-rq requirements

@@ -405,11 +405,14 @@ class Task(models.Model):
             return os.path.join(LOG_ROOT, str(self.id) + '.log')
         return None
 
-    def get_logger(self, verbosity):
+    def get_logger(self, verbosity=None):
         """
         If verbosity <= 0, return None;
         else returns task's own file logger (and creates it if necessary)
         """
+        if verbosity == None:
+            verbosity = self.verbosity
+
         if verbosity >= 1 and self.logger is None:
             # http://stackoverflow.com/questions/29712938/python-celery-how-to-separate-log-files#29733606
             logger_name = 'task_logger_' + str(self.id)
