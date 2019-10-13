@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.5
+-----
+* Quickstart revised in README
+
 1.4.4
 -----
 * Task.get_logger() is now publicly available

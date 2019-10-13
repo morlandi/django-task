@@ -16,11 +16,11 @@ A Django app to run new background tasks from either admin or cron, and inspect 
 Quickstart
 ----------
 
-Install Django Task::
+(1) Install Django Task::
 
     pip install django-task
 
-Add it to your `INSTALLED_APPS`:
+(2) Add it to your `INSTALLED_APPS`:
 
 .. code-block:: python
 
@@ -31,15 +31,148 @@ Add it to your `INSTALLED_APPS`:
         ...
     )
 
-Add Django Task's URL patterns:
+(3) Add Django Task's URL patterns:
 
 .. code-block:: python
 
     urlpatterns = [
         ...
-        url(r'^django_task/', include('django_task.urls', namespace='django_task')),
+        path('django_task/', include('django_task.urls', namespace='django_task')),
         ...
     ]
+
+(4) Configure Redis and RQ in settings.py; example::
+
+.. code-block:: python
+
+    #REDIS_URL = 'redis://localhost:6379/0'
+    redis_host = os.environ.get('REDIS_HOST', 'localhost')
+    redis_port = 6379
+    REDIS_URL = 'redis://%s:%d/0' % (redis_host, redis_port)
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.RedisCache',
+            'LOCATION': REDIS_URL
+        },
+    }
+
+    #
+    # RQ config
+    #
+
+    RQ_PREFIX = "myproject_"
+    QUEUE_DEFAULT = RQ_PREFIX + 'default'
+    QUEUE_HIGH = RQ_PREFIX + 'high'
+    QUEUE_LOW = RQ_PREFIX + 'low'
+
+    RQ_QUEUES = {
+        QUEUE_DEFAULT: {
+            'URL': REDIS_URL,
+            #'PASSWORD': 'some-password',
+            'DEFAULT_TIMEOUT': 360,
+        },
+        QUEUE_HIGH: {
+            'URL': REDIS_URL,
+            'DEFAULT_TIMEOUT': 500,
+        },
+        QUEUE_LOW: {
+            'URL': REDIS_URL,
+            #'ASYNC': False,
+        },
+    }
+
+4b. or, if you plan to install one many instances of the project on the same server:
+
+.. code-block:: python
+
+    #
+    # RQ config
+    #
+
+    QUEUE_DEFAULT = 'default'
+    QUEUE_LOW = 'low'
+    QUEUE_HIGH = 'high'
+
+    def rq_queue_name(prefix, name):
+        return prefix + '_' + name
+
+    def setup_rq_queues(prefix):
+        """
+        Purposes:
+            - setup RQ_PREFIX setting for later inspection
+            - setup RQ_QUEUES dictionary with instance-specific queues
+
+        Invoke once from local.py providing an instance specific prefix;
+        example:
+
+            RQ_PREFIX = "myproject"
+            RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
+
+        Alternatively, provide a fully customized RQ_QUEUES dictionary in local.py
+        """
+        data = {
+            QUEUE_DEFAULT: {
+                'URL': REDIS_URL,
+                #'PASSWORD': 'some-password',
+                #'DEFAULT_TIMEOUT': 5 * 60,
+                'DEFAULT_TIMEOUT': -1,  # -1 means infinite
+            },
+            QUEUE_LOW: {
+                'URL': REDIS_URL,
+                #'ASYNC': False,
+            },
+            QUEUE_HIGH: {
+                'URL': REDIS_URL,
+                'DEFAULT_TIMEOUT': 500,
+            },
+        }
+
+        queues = {rq_queue_name(prefix, key): value for key, value in data.items()}
+        return queues
+
+then, in your "local.py":
+
+.. code-block:: python
+
+    #
+    # RQ configuration
+    #
+
+    RQ_PREFIX = "project_instane_XYZ"
+    RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
+
+    print('RQ_QUEUES: ')
+    print(RQ_QUEUES)
+
+(5) Add specific settings (optional):
+
+.. code-block:: python
+
+    RQ_SHOW_ADMIN_LINK = False
+    DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
+    DJANGOTASK_ALWAYS_EAGER = False
+    DJANGOTASK_JOB_TRACE_ENABLED = False
+    DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
+
+(6) Optionally, revoke pending tasks at startapp;
+
+file `main/apps.py`:
+
+.. code-block:: python
+
+    class MainConfig(AppConfig):
+
+        ...
+
+        def ready(self):
+
+            ...
+            try:
+                from django_task.utils import revoke_pending_tasks
+                revoke_pending_tasks()
+            except Exception as e:
+                print(e)
 
 Features
 --------
@@ -521,8 +654,8 @@ Create and run a new task based on specified parameters
 
 Expected parameters:
 
-    - 'task-model' = "<app_name>.<model_name>"
-    - ... task parameters ...
+- 'task-model' = "<app_name>.<model_name>"
+- ... task parameters ...
 
 Returns the id of the new task
 
