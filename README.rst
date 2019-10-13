@@ -16,11 +16,13 @@ A Django app to run new background tasks from either admin or cron, and inspect 
 Quickstart
 ----------
 
-(1) Install Django Task::
+1) **Install Django Task**:
+
+.. code-block:: bash
 
     pip install django-task
 
-(2) Add it to your `INSTALLED_APPS`:
+2) **Add it to your `INSTALLED_APPS`**:
 
 .. code-block:: python
 
@@ -31,7 +33,7 @@ Quickstart
         ...
     )
 
-(3) Add Django Task's URL patterns:
+3) **Add Django Task's URL patterns**:
 
 .. code-block:: python
 
@@ -41,7 +43,7 @@ Quickstart
         ...
     ]
 
-(4) Configure Redis and RQ in settings.py; example::
+4) **Configure Redis and RQ in settings.py**; example:
 
 .. code-block:: python
 
@@ -82,7 +84,7 @@ Quickstart
         },
     }
 
-4b. or, if you plan to install one many instances of the project on the same server:
+5) **or, if you plan to install one many instances of the project on the same server**:
 
 .. code-block:: python
 
@@ -145,7 +147,9 @@ then, in your "local.py":
     print('RQ_QUEUES: ')
     print(RQ_QUEUES)
 
-(5) Add specific settings (optional):
+
+
+6) **Customize django-task specific settings (optional)**:
 
 .. code-block:: python
 
@@ -155,7 +159,7 @@ then, in your "local.py":
     DJANGOTASK_JOB_TRACE_ENABLED = False
     DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
 
-(6) Optionally, revoke pending tasks at startapp;
+7) **Optionally, revoke pending tasks at startapp**;
 
 file `main/apps.py`:
 
