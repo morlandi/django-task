@@ -4,6 +4,11 @@
 History
 =======
 
+1.4.6
+-----
+* replace namespace "django.jQuery" with more generic "jQuery" in js helpers
+* update example project
+
 1.4.5
 -----
 * Quickstart revised in README
