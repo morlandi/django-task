@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django_task.models import Task
+from example.settings import rq_queue_name
 
 
 ################################################################################
@@ -9,10 +10,11 @@ class CountBeansTask(Task):
 
     num_beans = models.PositiveIntegerField(default=100)
 
-    TASK_QUEUE = settings.QUEUE_DEFAULT
+    TASK_QUEUE = rq_queue_name(settings.RQ_PREFIX, settings.QUEUE_DEFAULT)
     #TASK_TIMEOUT = 10
     DEFAULT_VERBOSITY = 2
     LOG_TO_FIELD = True
+    LOG_TO_FILE = False
 
     @staticmethod
     def get_jobfunc():
@@ -28,9 +30,11 @@ class SendEmailTask(Task):
     subject = models.CharField(max_length=256, null=False, blank=False)
     message = models.TextField(null=False, blank=True)
 
-    TASK_QUEUE = settings.QUEUE_LOW
+    TASK_QUEUE = rq_queue_name(settings.RQ_PREFIX, settings.QUEUE_LOW)
+    #TASK_TIMEOUT = 10
     DEFAULT_VERBOSITY = 2
-    LOG_TO_FILE = True
+    LOG_TO_FIELD = True
+    LOG_TO_FILE = False
 
     @staticmethod
     def get_jobfunc():

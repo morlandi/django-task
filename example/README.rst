@@ -23,7 +23,7 @@ To run this example, follow these instructions:
 
 5. Run at least a worker for the queue named "default", and the server::
 
-    python manage.py rqworker default
+    python manage.py rqworker example_default
     python manage.py runserver
 
 6. Access from the browser at `http://127.0.0.1:8000`
