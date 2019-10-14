@@ -84,7 +84,7 @@ Quickstart
         },
     }
 
-5) **or, if you plan to install one many instances of the project on the same server**:
+5) **or, if you plan to install many instances of the project on the same server**:
 
 .. code-block:: python
 
@@ -141,7 +141,7 @@ then, in your "local.py":
     # RQ configuration
     #
 
-    RQ_PREFIX = "project_instane_XYZ"
+    RQ_PREFIX = "project_instance_XYZ"
     RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
 
     print('RQ_QUEUES: ')
@@ -694,6 +694,17 @@ Sample usage:
     }).fail(function(jqXHR, textStatus, errorThrown) {
         display_server_error(jqXHR.responseText);
     });
+
+
+
+Example Project for django-task
+-------------------------------
+
+As example project is provided as a convenience feature to allow potential users
+to try the app straight from the app repo without having to create a django project.
+
+Please follow the instructions detailed in file `example/README.rst <example/README.rst>`_.
+
 
 Credits
 -------
