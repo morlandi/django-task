@@ -8,6 +8,7 @@ History
 -----
 * replace namespace "django.jQuery" with more generic "jQuery" in js helpers
 * update example project
+* unit tests added to "tasks" app in example project
 
 1.4.5
 -----
