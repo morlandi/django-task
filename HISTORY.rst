@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.7
+-----
+* Added optional "created_by" parameter to TaskCommand utility
+
 1.4.6
 -----
 * replace namespace "django.jQuery" with more generic "jQuery" in js helpers
