@@ -84,9 +84,10 @@ def revoke_pending_tasks():
     for model in task_models:
         queryset = model.objects.filter(status__in=Task.TASK_STATUS_PENDING_VALUES)
         n = queryset.count()
-        print('revoking %s objects (%d) ...' % (model.__name__, n))
-        #model.objects.all().delete()
-        queryset.update(status='REVOKED')
+        if n > 0:
+            print('revoking %s objects (%d) ...' % (model.__name__, n))
+            #model.objects.all().delete()
+            queryset.update(status='REVOKED')
         counter += n
 
     return counter

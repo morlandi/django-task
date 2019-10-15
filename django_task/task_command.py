@@ -35,10 +35,12 @@ class TaskCommand(BaseCommand):
 
     #     self.stdout.write('[%s] %s scheduled (job=%s)' % (timezone.now().isoformat(), TaskClass.__name__, job.get_id()))
 
-    def run_task(self, TaskClass, **options):
+    def run_task(self, TaskClass, created_by=None, **options):
         try:
             param_names = TaskClass.retrieve_param_names()
             params = dict([item for item in options.items() if item[0] in param_names])
+            if created_by is not None:
+                params.update({'created_by': created_by})
             task = TaskClass.objects.create(**params)
             is_async = not options.get('sync')
             task.run(is_async=is_async)

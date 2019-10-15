@@ -286,6 +286,9 @@ class Task(models.Model):
 
     @property
     def duration(self):
+        """
+        Expressed in seconds (None when not applicable)
+        """
         dt = None
         try:
             if self.check_status_complete():

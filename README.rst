@@ -461,6 +461,7 @@ remove the log file when the corresponding record is deleted::
 .. code:: python
 
     from django_task.task_command import TaskCommand
+    from django.contrib.auth import get_user_model
 
     class Command(TaskCommand):
 
@@ -470,6 +471,7 @@ remove the log file when the corresponding record is deleted::
             parser.add_argument('subject')
             parser.add_argument('message')
             parser.add_argument('-r', '--recipients', nargs='*')
+            parser.add_argument('-u', '--user', type=str, help="Specify username for 'created_by' task field")
 
         def handle(self, *args, **options):
             from tasks.models import SendEmailTask
@@ -481,7 +483,12 @@ remove the log file when the corresponding record is deleted::
             # format multiline message
             options['message'] = options['message'].replace('\\n', '\n')
 
-            self.run_task(SendEmailTask, **options)
+            if 'user' in options:
+                created_by = get_user_model().objects.get(username=options['user'])
+            else:
+                created_by = None
+
+            self.run_task(SendEmailTask, created_by=created_by, **options)
 
 **Deferred Task retrieval to avoid job vs. Task race condition**
 
