@@ -668,9 +668,40 @@ Expected parameters:
 - 'task-model' = "<app_name>.<model_name>"
 - ... task parameters ...
 
-Returns the id of the new task
+Returns the id of the new task.
 
-TODO: provide a real usage example
+Sample usage:
+
+.. code:: javascript
+
+    function exportAcquisition(object_id) {
+        if (confirm('Do you want to export data ?')) {
+
+            var url = '/django_task/add/';
+            var data = JSON.stringify({
+                'task-model': 'tasks.exportdatatask',
+                'source': 'backend.acquisition',
+                'object_id': object_id
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: data,
+                cache: false,
+                crossDomain: true,
+                dataType: 'json',
+                headers: {'X-CSRFToken': getCookie('csrftoken')}
+            }).done(function(data) {
+                console.log('data: %o', data);
+                alert('New task created: "' + data.task_id + '"');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.log('ERROR: ' + jqXHR.responseText);
+                alert(errorThrown);
+            });
+        }
+        return;
+    }
 
 task_run_api
 ............

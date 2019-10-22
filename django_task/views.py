@@ -117,7 +117,39 @@ def task_add_api(request):
         'task-model' = "<app_name>.<model_name>"
         ... task parameters ...
 
-    Returns the id of the new task
+    Returns the id of the new task.
+
+
+    Sample usage (javescript):
+
+        function exportAcquisition(object_id) {
+            if (confirm('Do you want to export data ?')) {
+
+                var url = '/django_task/add/';
+                var data = JSON.stringify({
+                    'task-model': 'tasks.exportdatatask',
+                    'source': 'backend.acquisition',
+                    'object_id': object_id
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: data,
+                    cache: false,
+                    crossDomain: true,
+                    dataType: 'json',
+                    headers: {'X-CSRFToken': getCookie('csrftoken')}
+                }).done(function(data) {
+                    console.log('data: %o', data);
+                    alert('New task created: "' + data.task_id + '"');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    console.log('ERROR: ' + jqXHR.responseText);
+                    alert(errorThrown);
+                });
+            }
+            return;
+        }
     """
 
     if request.method != 'POST' or not request.user.is_authenticated:

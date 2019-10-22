@@ -4,6 +4,10 @@
 History
 =======
 
+1.4.8
+-----
+* Example provided for task_add_api() javascript helper
+
 1.4.7
 -----
 * Added optional "created_by" parameter to TaskCommand utility
