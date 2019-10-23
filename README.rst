@@ -13,6 +13,10 @@ django-task
 
 A Django app to run new background tasks from either admin or cron, and inspect task history from admin; based on django-rq
 
+.. contents::
+
+.. sectnum::
+
 Quickstart
 ----------
 
@@ -734,6 +738,75 @@ Sample usage:
     });
 
 
+Updating the tasks listing dynamically in the frontend
+------------------------------------------------------
+
+The list of Tasks in the admin changelist_view is automatically updated to refresh
+the progess and status of each running Task.
+
+You can obtain the same result in the frontend by calling the **DjangoTask.update_tasks()**
+javascript helper, provided you're listing the tasks in an HTML table with a similar layout.
+
+The simplest way to do it is to use the **render_task_column_names_as_table_row**
+and **render_task_as_table_row** template tags.
+
+Example:
+
+.. code:: html
+
+    {% load i18n django_task_tags %}
+
+    {% if not export_data_tasks %}
+        <div>{% trans 'No recent jobs available' %}</div>
+    {% else %}
+        <table id="export_data_tasks" class="table table-striped">
+            {% with excluded='created_by,created_on,job_id,log_text,mode' %}
+            <thead>
+                <tr>
+                    {{ export_data_tasks.0|render_task_column_names_as_table_row:excluded }}
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in export_data_tasks %}
+                <tr>
+                    {{ task|render_task_as_table_row:excluded }}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endwith %}
+    {% endif %}
+
+
+    {% block extrajs %}
+        {{ block.super }}
+        <script type="text/javascript" src="{% static 'js/django_task.js' %}"></script>
+        <script>
+            $(document).ready(function() {
+                DjangoTask.update_tasks(1000, '#export_data_tasks');
+            });
+        </script>
+    {% endblock extrajs %}
+
+For each fieldname included in the table rows, **render_task_as_table_row** will
+check if a FIELDNAME_display() method is available in the Task model, and in case
+will use it for rendering the field value; otherwise, the field value will be simply
+converted into a string.
+
+If the specific derived Task model defines some additional fields (unknown to the base Task model)
+which need to be updated regularly by **DjangoTask.update_tasks()**, include them as "extra_fields"
+as follows:
+
+.. code:: python
+
+    def as_dict(self):
+        data = super(ExportDataTask, self).as_dict()
+        data['extra_fields'] = {
+            'result_display': mark_safe(self.result_display())
+        }
+        return data
+
+.. image:: example/etc/screenshot_003.png
 
 Example Project for django-task
 -------------------------------

@@ -4,9 +4,12 @@
 History
 =======
 
-1.4.8
+1.5.0
 -----
+* Support for updating the tasks listing dynamically in the frontend
 * Example provided for task_add_api() javascript helper
+* POSSIBLY INCOMPATIBLE CHANGE: duration and duration_display are now methods rather then properties
+* it traslation for UI messages
 
 1.4.7
 -----

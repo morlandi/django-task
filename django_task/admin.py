@@ -106,23 +106,15 @@ class TaskAdmin(admin.ModelAdmin):
         prepopulated_fields = super(TaskAdmin, self).get_prepopulated_fields(request, obj)
         return prepopulated_fields
 
-    # def model_name_display(self, obj):
-    #     try:
-    #         model_name = obj.get_child()._meta.model_name
-    #     except:
-    #         model_name = self.model._meta.model_name
-    #     return model_name
-    # model_name_display.short_description = _('Task')
+    # def created_on_display(self, obj):
+    #     return format_datetime(obj.created_on, include_time=True)
+    # created_on_display.short_description = _('Created on')
+    # created_on_display.admin_order_field = 'created_on'
 
-    def created_on_display(self, obj):
-        return format_datetime(obj.created_on, include_time=True)
-    created_on_display.short_description = _('Created on')
-    created_on_display.admin_order_field = 'created_on'
-
-    def completed_on_display(self, obj):
-        return format_datetime(obj.completed_on, include_time=True)
-    completed_on_display.short_description = _('Completed on')
-    completed_on_display.admin_order_field = 'completed_on'
+    # def completed_on_display(self, obj):
+    #     return format_datetime(obj.completed_on, include_time=True)
+    # completed_on_display.short_description = _('Completed on')
+    # completed_on_display.admin_order_field = 'completed_on'
 
     def started_on_display(self, obj):
         if obj.job_id:
@@ -134,6 +126,16 @@ class TaskAdmin(admin.ModelAdmin):
         return mark_safe(html)
     started_on_display.short_description = _('Started on')
     started_on_display.admin_order_field = 'started_on'
+
+    def progress_display(self, obj):
+        if not obj.check_status_complete() or obj._meta.model_name== 'task':
+            html = str(obj.progress) if obj.progress is not None else '-'
+        else:
+            info = self.model._meta.app_label, self.model._meta.model_name
+            url = reverse('admin:%s_%s_repeat' % info, args=(obj.id, ))
+            html = '<a href="%s">%s</a>' % (url, _('repeat'))
+        return mark_safe(html)
+    progress_display.short_description = _('Progress')
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name

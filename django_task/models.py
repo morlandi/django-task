@@ -106,13 +106,13 @@ class Task(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='+', on_delete=models.SET_NULL)
     started_on = models.DateTimeField(_('started on'), null=True)
     completed_on = models.DateTimeField(_('completed on'), null=True)
-    job_id = models.CharField(_('job id'), max_length=128, null=False, blank=True)
+    progress = models.IntegerField(_('progress'), null=True, blank=True)
     status = models.CharField(_('status'), max_length=128, null=False, blank=False, db_index=True,
         choices=TASK_STATUS_CHOICES, default=DEFAULT_TASK_STATUS_VALUE)
+    job_id = models.CharField(_('job id'), max_length=128, null=False, blank=True)
     mode = models.CharField(_('mode'), max_length=128, null=False, blank=False, db_index=True,
         choices=TASK_MODE_CHOICES, default=DEFAULT_TASK_MODE_VALUE)
     failure_reason = models.CharField(_('failure reason'), max_length=256, null=False, blank=True)
-    progress = models.IntegerField(_('progress'), null=True, blank=True)
     log_text = models.TextField(_('log text'), null=False, blank=True)
 
     #
@@ -204,8 +204,8 @@ class Task(models.Model):
             'progress': self.progress,
             'progress_display': self.progress_display(),
             'completed': self.check_status_complete(),
-            'duration': self.duration,
-            'duration_display': self.duration_display,
+            'duration': self.duration(),
+            'duration_display': self.duration_display(),
             'extra_fields': {},
         }
 
@@ -284,7 +284,21 @@ class Task(models.Model):
     def sync_mode(self):
         return self.mode == 'SYNC'
 
-    @property
+    def created_on_display(self):
+        return format_datetime(self.created_on, include_time=True)
+    created_on_display.short_description = _('Created on')
+    created_on_display.admin_order_field = 'created_on'
+
+    def completed_on_display(self):
+        return format_datetime(self.completed_on, include_time=True)
+    completed_on_display.short_description = _('Completed on')
+    completed_on_display.admin_order_field = 'completed_on'
+
+    def started_on_display(self):
+        return format_datetime(self.started_on, include_time=True)
+    started_on_display.short_description = _('Started on')
+    started_on_display.admin_order_field = 'started_on'
+
     def duration(self):
         """
         Expressed in seconds (None when not applicable)
@@ -298,15 +312,14 @@ class Task(models.Model):
         except:
             return None
         return int(dt.total_seconds()) if dt is not None else None
-    duration.fget.short_description = _('duration')
+    duration.short_description = _('Duration')
 
-    @property
     def duration_display(self):
-        seconds = self.duration
+        seconds = self.duration()
         if seconds is None:
             return ''
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
-    duration_display.fget.short_description = _('duration')
+    duration_display.short_description = _('Duration')
 
     def set_status(self, status, job_id=None, failure_reason=None, commit=True):
 
@@ -391,9 +404,7 @@ class Task(models.Model):
         if not self.check_status_complete() or self._meta.model_name== 'task':
             html = str(self.progress) if self.progress is not None else '-'
         else:
-            info = self._meta.app_label, self._meta.model_name
-            url = reverse('admin:%s_%s_repeat' % info, args=(self.id, ))
-            html = '<a href="%s">%s</a>' % (url, _('repeat'))
+            html = ''
         return mark_safe(html)
     progress_display.short_description = _('Progress')
 

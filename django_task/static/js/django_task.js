@@ -1,4 +1,4 @@
-(function($) {
+window.DjangoTask = (function($) {
 
     $(document).ready(function() {
         var body = $('body');
@@ -20,9 +20,9 @@
         if (parts.length == 2) return parts.pop().split(';').shift();
     }
 
-    function update_tasks(autorepeat_interval) {
+    function update_tasks(autorepeat_interval, selector='#result_list') {
 
-        console.log('update_tasks() ...');
+        console.log('update_tasks(%o) ...', selector);
 
         // clear one-shot timer
         if (update_tasks_timer != null) {
@@ -32,7 +32,7 @@
 
         // Collect incomplete taks
         var incomplete_tasks = [];
-        $('.task_status[data-task-complete="0"]').each(function(index, item) {
+        $(selector + ' .task_status[data-task-complete="0"]').each(function(index, item) {
             incomplete_tasks.push({
                 id: $(item).data('task-id'),
                 model: $(item).data('task-model')
@@ -57,26 +57,27 @@
                     if (!item.completed) {
                         repeat = true;
                     }
-                    update_task_row(item);
+                    update_task_row(item, selector);
                 });
                 if (repeat) {
                     // re-arm timer
                     if (autorepeat_interval > 0) {
-                        setTimeout(function() { update_tasks(autorepeat_interval); }, autorepeat_interval);
+                        setTimeout(function() { update_tasks(autorepeat_interval, selector); }, autorepeat_interval);
                     }
                 }
             }).fail(function(jqXHR, textStatus) {
                 console.log('update_tasks() ERROR: %o', jqXHR);
                 // re-arm timer
                 if (autorepeat_interval > 0) {
-                    setTimeout(function() { update_tasks(autorepeat_interval); }, autorepeat_interval);
+                    setTimeout(function() { update_tasks(autorepeat_interval, selector); }, autorepeat_interval);
                 }
             });
         }
     }
 
-    function update_task_row(item) {
-        var row = $('#result_list .task_status[data-task-id="' + item.id + '"]').closest('tr');
+    function update_task_row(item, selector) {
+        //var row = $('#result_list .task_status[data-task-id="' + item.id + '"]').closest('tr');
+        var row = $(selector + ' .task_status[data-task-id="' + item.id + '"]').closest('tr');
         if (row.length) {
             $(row).find('.field-started_on_display').html(item.started_on_display);
             $(row).find('.field-completed_on_display').html(item.completed_on_display);
@@ -102,5 +103,9 @@
         });
         return false;
     }
+
+    return {
+        update_tasks: update_tasks
+    };
 
 })(jQuery);
