@@ -30,7 +30,7 @@ nosetests.xml
 htmlcov
 
 # Translations
-*.mo
+#*.mo
 
 # Mr Developer
 .mr.developer.cfg
