@@ -4,6 +4,11 @@
 History
 =======
 
+1.5.1
+-----
+* Moved required imports inside Job.run() so it can be more easily replicated for any needed customization
+...
+
 1.5.0
 -----
 * Support for updating the tasks listing dynamically in the frontend

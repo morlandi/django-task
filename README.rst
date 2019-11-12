@@ -289,6 +289,11 @@ Starting from version 0.3.0, some conveniences have been added:
 
         @classmethod
         def run(job_class, task_class, task_id):
+
+            from django_task.job import job_trace
+            from rq import get_current_job
+            from django_task.app_settings import REDIS_URL
+
             job_trace('job.run() enter')
             task = None
             result = 'SUCCESS'

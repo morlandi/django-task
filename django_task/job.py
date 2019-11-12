@@ -2,8 +2,8 @@ from __future__ import print_function
 import redis
 import logging
 import traceback
-from rq import get_current_job
-from .app_settings import REDIS_URL
+#from rq import get_current_job
+#from .app_settings import REDIS_URL
 from .app_settings import JOB_TRACE_ENABLED
 
 
@@ -16,6 +16,11 @@ class Job(object):
 
     @classmethod
     def run(job_class, task_class, task_id):
+
+        from django_task.job import job_trace
+        from rq import get_current_job
+        from django_task.app_settings import REDIS_URL
+
         job_trace('job.run() enter')
         task = None
         result = 'SUCCESS'
