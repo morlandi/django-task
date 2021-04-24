@@ -57,7 +57,7 @@ setup(
         'django_task',
     ],
     include_package_data=True,
-    install_requires=['django>=1.11', 'django-rq>=2.1.0', 'rq>=1.1.0'],
+    #install_requires=['django>=1.11', 'django-rq>=2.1.0', 'rq>=1.1.0'],
     license="MIT",
     zip_safe=False,
     keywords='django-task',

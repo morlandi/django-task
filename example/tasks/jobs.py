@@ -14,8 +14,7 @@ class CountBeansJob(Job):
 
     @staticmethod
     def execute(job, task):
-        params = task.retrieve_params_as_dict()
-        num_beans = params['num_beans']
+        num_beans = task.num_beans
         for i in range(0, num_beans):
             time.sleep(0.01)
             task.set_progress((i + 1) * 100 / num_beans, step=10)
@@ -25,10 +24,10 @@ class SendEmailJob(Job):
 
     @staticmethod
     def execute(job, task):
-        params = task.retrieve_params_as_dict()
-        recipient_list = params['recipients'].split()
-        sender = params['sender'].strip()
-        subject = params['subject'].strip()
-        message = params['message']
+        recipient_list = task.recipients.split()
+        sender = task.sender.strip()
+        subject = task.subject.strip()
+        message = task.message
+
         from django.core.mail import send_mail
         send_mail(subject, message, sender, recipient_list)

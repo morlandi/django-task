@@ -162,7 +162,7 @@ Features
 3. job execution workflow:
 
    - job execution is triggered by task.run(is_async)
-   - job will receive the task.id, and retrieve paramerts from it (task.retrieve_params_as_dict())
+   - job will receive the task.id, and retrieve paramerts from it
    - on start, job will update task status to 'STARTED' and save job.id for reference
    - during execution, the job can update the progress indicator
    - on completion, task status is finally updated to either 'SUCCESS' or 'FAILURE'
@@ -318,8 +318,7 @@ example:
 
         @staticmethod
         def execute(job, task):
-            params = task.retrieve_params_as_dict()
-            num_beans = params['num_beans']
+            num_beans = task.num_beans
             for i in range(0, num_beans):
                 time.sleep(0.01)
                 task.set_progress((i + 1) * 100 / num_beans, step=10)
@@ -423,13 +422,13 @@ remove the log file when the corresponding record is deleted::
 
         @staticmethod
         def execute(job, task):
-            params = task.retrieve_params_as_dict()
-            recipient_list = params['recipients'].split()
-            sender = params['sender'].strip()
-            subject = params['subject'].strip()
-            message = params['message']
+            recipient_list = task.recipients.split()
+            sender = task.sender.strip()
+            subject = task.subject.strip()
+            message = task.message
             from django.core.mail import send_mail
             send_mail(subject, message, sender, recipient_list)
+
 
 **Sample management command**
 

@@ -27,8 +27,8 @@ try:
 except:
     from django.core.urlresolvers import reverse
 from django.dispatch import receiver
-import django_rq
-import rq
+# import django_rq
+# import rq
 #from rq import get_current_job
 #from rq import Worker, Queue
 from .exceptions import TaskError
@@ -225,7 +225,8 @@ class Task(models.Model):
 
         duplicate = self._meta.model.objects.get(id=self.id)
         duplicate.id = uuid.uuid4()
-        duplicate.created_on = datetime.datetime.now()
+        #duplicate.created_on = datetime.datetime.now()
+        duplicate.created_on = timezone.now()
         duplicate.created_by = request.user if request is not None else None
         duplicate.started_on = None
         duplicate.completed_on = None
@@ -485,6 +486,7 @@ class Task(models.Model):
         pass
 
     def check_worker_active_for_queue(self, queue):
+        import rq
         # collect active workers
         workers = rq.Worker.all(connection=redis.Redis.from_url(REDIS_URL))
         # Retrieve active queues;
@@ -493,6 +495,7 @@ class Task(models.Model):
         return queue.name in active_queue_names
 
     def get_queue(self):
+        import django_rq
         # See: https://github.com/rq/django-rq
         is_async = self.mode == 'ASYNC'
         if self.TASK_TIMEOUT > 0:
