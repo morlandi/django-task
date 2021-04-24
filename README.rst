@@ -88,72 +88,25 @@ Quickstart
         },
     }
 
-5) **or, if you plan to install many instances of the project on the same server**:
+Note: if you plan to install many instances of the project on the same server,
+for each instance use a specific value for `RQ_PREFIX`; for example:
 
 .. code-block:: python
 
-    #
-    # RQ config
-    #
+    INSTANCE_PREFIX = "myproject_"
+    try:
+        from project.settings.instance_prefix import *
+    except Exception as e:
+        pass
+    RQ_PREFIX = INSTANCE_PREFIX
 
-    QUEUE_DEFAULT = 'default'
-    QUEUE_LOW = 'low'
-    QUEUE_HIGH = 'high'
+    QUEUE_DEFAULT = RQ_PREFIX + '_default'
+    QUEUE_LOW = RQ_PREFIX + '_low'
+    QUEUE_HIGH = RQ_PREFIX + '_high'
 
-    def rq_queue_name(prefix, name):
-        return prefix + '_' + name
+    ...
 
-    def setup_rq_queues(prefix):
-        """
-        Purposes:
-            - setup RQ_PREFIX setting for later inspection
-            - setup RQ_QUEUES dictionary with instance-specific queues
-
-        Invoke once from local.py providing an instance specific prefix;
-        example:
-
-            RQ_PREFIX = "myproject"
-            RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
-
-        Alternatively, provide a fully customized RQ_QUEUES dictionary in local.py
-        """
-        data = {
-            QUEUE_DEFAULT: {
-                'URL': REDIS_URL,
-                #'PASSWORD': 'some-password',
-                #'DEFAULT_TIMEOUT': 5 * 60,
-                'DEFAULT_TIMEOUT': -1,  # -1 means infinite
-            },
-            QUEUE_LOW: {
-                'URL': REDIS_URL,
-                #'ASYNC': False,
-            },
-            QUEUE_HIGH: {
-                'URL': REDIS_URL,
-                'DEFAULT_TIMEOUT': 500,
-            },
-        }
-
-        queues = {rq_queue_name(prefix, key): value for key, value in data.items()}
-        return queues
-
-then, in your "local.py":
-
-.. code-block:: python
-
-    #
-    # RQ configuration
-    #
-
-    RQ_PREFIX = "project_instance_XYZ"
-    RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
-
-    print('RQ_QUEUES: ')
-    print(RQ_QUEUES)
-
-
-
-6) **Customize django-task specific settings (optional)**:
+5) **Customize django-task specific settings (optional)**:
 
 .. code-block:: python
 

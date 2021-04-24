@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -119,6 +120,45 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+
+################################################################################
+#   Echo helpers
+
+def settings_echo(message, title='', error=False, warning=False):
+    """
+    Helpers to display a message
+    """
+    # Avoid echoing twice when executing runserver
+    if os.environ.get('RUN_MAIN') is None:
+        if error:
+            prefix = "\x1b[41;37m"
+        elif warning:
+            prefix = "\x1b[43;30m"
+        else:
+            prefix = "\x1b[47;30m"
+        suffix = " \x1b[0m"
+        if title:
+            print(prefix + str(title) + ':' + suffix, file=sys.stderr, end ="")
+        print(prefix + str(message) + suffix, file=sys.stderr,)
+
+
+################################################################################
+#   Constants
+
+INSTANCE_PREFIX = "example"
+try:
+    from example.settings.instance_prefix import *
+except Exception as e:
+    #print('ERROR: %s' % str(e))
+    #settings_echo(str(e), title='WARNING', error=False, warning=True)
+    pass
+
+SESSION_COOKIE_NAME = INSTANCE_PREFIX + '_sid'
+
+settings_echo(INSTANCE_PREFIX, title='INSTANCE_PREFIX')
+settings_echo(SESSION_COOKIE_NAME, title='SESSION_COOKIE_NAME')
+
 #
 # Redis config
 #
@@ -127,6 +167,7 @@ STATIC_URL = '/static/'
 redis_host = os.environ.get('REDIS_HOST', 'localhost')
 redis_port = 6379
 REDIS_URL = 'redis://%s:%d/0' % (redis_host, redis_port)
+settings_echo(REDIS_URL, title='REDIS_URL')
 
 # CACHES = {
 #     'default': {
@@ -147,57 +188,28 @@ DJANGOTASK_ALWAYS_EAGER = False
 DJANGOTASK_JOB_TRACE_ENABLED = False
 DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
 
-QUEUE_DEFAULT = 'default'
-QUEUE_LOW = 'low'
-QUEUE_HIGH = 'high'
+QUEUE_DEFAULT = INSTANCE_PREFIX + '_default'
+QUEUE_LOW = INSTANCE_PREFIX + '_low'
+QUEUE_HIGH = INSTANCE_PREFIX + '_high'
 
+RQ_QUEUES = {
+    QUEUE_DEFAULT: {
+        'URL': REDIS_URL,
+        #'PASSWORD': 'some-password',
+        #'DEFAULT_TIMEOUT': 5 * 60,
+        'DEFAULT_TIMEOUT': -1,  # -1 means infinite
+    },
+    QUEUE_LOW: {
+        'URL': REDIS_URL,
+        #'ASYNC': False,
+        'DEFAULT_TIMEOUT': 10 * 60,
+    },
+    QUEUE_HIGH: {
+        'URL': REDIS_URL,
+        'DEFAULT_TIMEOUT': 500,
+    },
+}
 
-def rq_queue_name(prefix, name):
-    return prefix + '_' + name
-
-
-def setup_rq_queues(prefix):
-    """
-    Purposes:
-        - setup RQ_PREFIX setting for later inspection
-        - setup RQ_QUEUES dictionary with instance-specific queues
-
-    Invoke once from local.py providing an instance specific prefix;
-    example:
-
-        RQ_PREFIX = "myproject"
-        RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
-
-    Alternatively, provide a fully customized RQ_QUEUES dictionary in local.py
-    """
-    data = {
-        QUEUE_DEFAULT: {
-            'URL': REDIS_URL,
-            #'PASSWORD': 'some-password',
-            #'DEFAULT_TIMEOUT': 5 * 60,
-            'DEFAULT_TIMEOUT': -1,  # -1 means infinite
-        },
-        QUEUE_LOW: {
-            'URL': REDIS_URL,
-            #'ASYNC': False,
-        },
-        QUEUE_HIGH: {
-            'URL': REDIS_URL,
-            'DEFAULT_TIMEOUT': 500,
-        },
-    }
-
-    queues = {rq_queue_name(prefix, key): value for key, value in data.items()}
-    return queues
-
-#
-# RQ local configuration
-#
-
-RQ_PREFIX = "example"
-RQ_QUEUES = setup_rq_queues(RQ_PREFIX)
-
-print('RQ_QUEUES: ')
-print(RQ_QUEUES)
-
-
+settings_echo('', title='RQ_QUEUES')
+for rq_queue_key, rq_queue_value in RQ_QUEUES.items():
+    settings_echo(rq_queue_value, title='- ' + rq_queue_key)
