@@ -116,7 +116,7 @@ for each instance use a specific value for `RQ_PREFIX`; for example:
     DJANGOTASK_JOB_TRACE_ENABLED = False
     DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
 
-7) **Optionally, revoke pending tasks at startapp**;
+6) **Optionally, revoke pending tasks at startapp**;
 
 file `main/apps.py`:
 
@@ -214,11 +214,24 @@ Running Tests
 
 Does the code actually work?
 
-::
+Running the unit tests from your project::
+
+    python manage.py test -v 2 django_task --settings=django_task.tests.settings
+
+Running the unit tests from your local fork::
 
     source <YOURVIRTUALENV>/bin/activate
     (myenv) $ pip install tox
     (myenv) $ tox
+
+or::
+
+    python ./runtests.py
+
+or::
+
+    coverage run --source='.' runtests.py
+    coverage report
 
 
 Support Job class
