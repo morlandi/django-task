@@ -1,11 +1,11 @@
 from django.db import models
 from django.conf import settings
-from django_task.models import Task
+from django_task.models import TaskRQ
 
 
 ################################################################################
 
-class CountBeansTask(Task):
+class CountBeansTask(TaskRQ):
 
     num_beans = models.PositiveIntegerField(default=100)
 
@@ -15,7 +15,7 @@ class CountBeansTask(Task):
     LOG_TO_FIELD = True
 
     @staticmethod
-    def get_jobfunc():
+    def get_jobclass():
         from .jobs import CountBeansJob
         return CountBeansJob
 

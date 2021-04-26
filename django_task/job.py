@@ -1,5 +1,3 @@
-from __future__ import print_function
-import redis
 import logging
 import traceback
 #from rq import get_current_job
@@ -17,9 +15,10 @@ class Job(object):
     @classmethod
     def run(job_class, task_class, task_id):
 
+        from .models import TaskRQ
+        from .models import TaskThreaded
+
         from django_task.job import job_trace
-        from rq import get_current_job
-        from django_task.app_settings import REDIS_URL
 
         job_trace('job.run() enter')
         task = None
@@ -28,13 +27,25 @@ class Job(object):
 
         try:
 
-            # this raises a "Could not resolve a Redis connection" exception in sync mode
-            #job = get_current_job()
-            job = get_current_job(connection=redis.Redis.from_url(REDIS_URL))
-
             # Retrieve task obj and set as Started
             task = task_class.get_task_from_id(task_id)
-            task.set_status(status='STARTED', job_id=job.get_id())
+
+            if issubclass(task_class, TaskRQ):
+                import redis
+                from django_task.app_settings import REDIS_URL
+                from rq import get_current_job
+                # this raises a "Could not resolve a Redis connection" exception in sync mode
+                #job = get_current_job()
+                job = get_current_job(connection=redis.Redis.from_url(REDIS_URL))
+                job_id = job.get_id()
+            elif issubclass(task_class, TaskThreaded):
+                import threading
+                job = threading.current_thread()
+                job_id = job.ident
+            else:
+                raise Exception('Unknown task_class')
+
+            task.set_status(status='STARTED', job_id=job_id)
 
             # Execute job passing by task
             job_class.execute(job, task)

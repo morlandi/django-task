@@ -26,6 +26,7 @@ SECRET_KEY = "oooooooooooooooooooooooooooooooooooooooooooooooooo"
 DEBUG = True
 
 ALLOWED_HOSTS = []
+USE_DJANGO_RQ = True
 
 # Application definition
 
@@ -36,13 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'django_rq',
     #'django_task.apps.DjangoTaskConfig',
     'django_task',
     'example',
     'tasks',
 ]
+
+if USE_DJANGO_RQ:
+    INSTALLED_APPS += [
+        'django_rq',
+    ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -107,7 +112,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Rome'
 
 USE_I18N = True
 

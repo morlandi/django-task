@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
 import json
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
@@ -11,7 +10,6 @@ from django.http import HttpResponse
 
 from .utils import format_datetime
 from .utils import get_object_by_uuid_or_404
-from .models import Task
 
 
 def tasks_info_api(request):

@@ -1,11 +1,12 @@
 from django.db import models
 from django.conf import settings
-from django_task.models import Task
+from django_task.models import TaskRQ
+from django_task.models import TaskThreaded
 
 
 ################################################################################
 
-class CountBeansTask(Task):
+class CountBeansTask(TaskRQ):
 
     num_beans = models.PositiveIntegerField(default=100)
 
@@ -16,12 +17,28 @@ class CountBeansTask(Task):
     LOG_TO_FILE = False
 
     @staticmethod
-    def get_jobfunc():
+    def get_jobclass():
         from .jobs import CountBeansJob
         return CountBeansJob
 
 
-class SendEmailTask(Task):
+class CountBeansTaskThreaded(TaskThreaded):
+
+    num_beans = models.PositiveIntegerField(default=100)
+
+    TASK_QUEUE = None
+    #TASK_TIMEOUT = 10
+    DEFAULT_VERBOSITY = 2
+    LOG_TO_FIELD = True
+    LOG_TO_FILE = False
+
+    @staticmethod
+    def get_jobclass():
+        from .jobs import CountBeansJob
+        return CountBeansJob
+
+
+class SendEmailTask(TaskRQ):
 
     sender = models.CharField(max_length=256, null=False, blank=False)
     recipients = models.TextField(null=False, blank=False,
@@ -36,6 +53,6 @@ class SendEmailTask(Task):
     LOG_TO_FILE = False
 
     @staticmethod
-    def get_jobfunc():
+    def get_jobclass():
         from .jobs import SendEmailJob
         return SendEmailJob

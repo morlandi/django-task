@@ -13,15 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+from django.urls import path, include
 from django.contrib import admin
 from django.shortcuts import redirect
+from django.conf import settings
 
 admin.site.enable_nav_sidebar = False
 
 urlpatterns = [
-    url(r'^$', lambda x: redirect('/admin/')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^django_task/', include('django_task.urls', namespace='django_task')),
-    url(r'^django-rq/', include('django_rq.urls')),
+    path('', lambda x: redirect('/admin/')),
+    path('admin/', admin.site.urls),
+    path('django_task/', include('django_task.urls', namespace='django_task')),
 ]
+
+if settings.USE_DJANGO_RQ:
+    urlpatterns += [
+        path('django-rq/', include('django_rq.urls')),
+    ]

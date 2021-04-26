@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import traceback
 import os
 import mimetypes
@@ -16,14 +15,13 @@ except:
     from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
-from .models import Task
+from .models import TaskBase
 #from .models import CountBeansTask
 #from .models import SendEmailTask
 from .utils import get_object_by_uuid_or_404
 from .utils import format_datetime
 
 
-#@admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
 
     class Media:
@@ -70,7 +68,7 @@ class TaskAdmin(admin.ModelAdmin):
             return noDupes
 
         fields = super(TaskAdmin, self).get_fieldsets(request, obj)[0][1]['fields']
-        base_fieldnames = [f.name for f in Task._meta.get_fields()]
+        base_fieldnames = [f.name for f in TaskBase._meta.get_fields()]
         primary_fields = remove_duplicates([f for f in fields if f not in base_fieldnames])
         secondary_fields = remove_duplicates([f for f in fields if f not in primary_fields])
         fieldsets = [
@@ -160,7 +158,8 @@ class TaskAdmin(admin.ModelAdmin):
         try:
             obj = get_object_by_uuid_or_404(self.model, object_id)
             job = obj.run(is_async=True, request=request)
-            messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (object_id, job.get_id()))
+            job_id = obj.get_job_id(job)
+            messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (object_id, job_id))
         except Exception as e:
             messages.error(request, str(e))
             if settings.DEBUG:
@@ -174,7 +173,8 @@ class TaskAdmin(admin.ModelAdmin):
             clone = source_obj.clone(request)
             #messages.info(request, _('Task "%s" cloned to "%s"') % (source_obj.id, clone.id))
             job = clone.run(is_async=True, request=request)
-            messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (clone.id, job.get_id()))
+            job_id = clone.get_job_id(job)
+            messages.info(request, _('Task "%s" scheduled for execution (job: "%s")') % (clone.id, job_id))
         except Exception as e:
             messages.error(request, str(e))
             if settings.DEBUG:

@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import uuid
 import os
 import time
@@ -76,13 +75,13 @@ def get_model_from_id(model_cls, id, timeout=1000, retry_count=10):
 
 def revoke_pending_tasks():
 
-    from .models import Task
+    from .models import TaskBase
 
     models = apps.get_models()
-    task_models = [model for model in models if issubclass(model, Task) and model != Task]
+    task_models = [model for model in models if issubclass(model, TaskBase)]
     counter = 0
     for model in task_models:
-        queryset = model.objects.filter(status__in=Task.TASK_STATUS_PENDING_VALUES)
+        queryset = model.objects.filter(status__in=TaskBase.TASK_STATUS_PENDING_VALUES)
         n = queryset.count()
         if n > 0:
             print('revoking %s objects (%d) ...' % (model.__name__, n))

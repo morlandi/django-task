@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-from __future__ import unicode_literals
 import uuid
 import os
 import datetime
@@ -8,7 +7,7 @@ import logging
 import sys
 import types
 import pprint
-import redis
+import threading
 try:
     from cStringIO import StringIO      # Python 2
 except ImportError:
@@ -27,10 +26,6 @@ try:
 except:
     from django.core.urlresolvers import reverse
 from django.dispatch import receiver
-# import django_rq
-# import rq
-#from rq import get_current_job
-#from rq import Worker, Queue
 from .exceptions import TaskError
 from .utils import format_datetime
 from .utils import get_model_from_id
@@ -40,7 +35,7 @@ from .app_settings import REDIS_URL
 from .app_settings import REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE
 
 
-class Task(models.Model):
+class TaskBase(models.Model):
 
     class Meta:
         ordering = ('-created_on', )
@@ -48,7 +43,7 @@ class Task(models.Model):
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        super(Task, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.log_stream = StringIO() if self.LOG_TO_FIELD else None
 
     # Celery tasks status values:
@@ -219,7 +214,7 @@ class Task(models.Model):
                     if 'log_text' not in kwargs['update_fields']:
                         kwargs['update_fields'].append('log_text')
 
-        super(Task, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def clone(self, request=None):
 
@@ -231,7 +226,7 @@ class Task(models.Model):
         duplicate.started_on = None
         duplicate.completed_on = None
         duplicate.job_id = ''
-        duplicate.status = Task.DEFAULT_TASK_STATUS_VALUE
+        duplicate.status = TaskBase.DEFAULT_TASK_STATUS_VALUE
         duplicate.failure_reason = ''
         duplicate.progress = None
 
@@ -273,6 +268,15 @@ class Task(models.Model):
                 duplicate.save()
 
         return duplicate
+
+    @staticmethod
+    def get_job_id(job):
+        """
+        Helper to extract job_id from job;
+        """
+        if isinstance(job, threading.Thread):
+            return job.ident
+        return job.get_id()
 
     ############################################################################
     # Duration, status and progress management
@@ -477,16 +481,72 @@ class Task(models.Model):
     #     """
     #     pass
 
+    # @staticmethod
+    # def get_jobfunc():
+    #     """
+    #     To be overridden supplying a specific job func.
+    #     TODO: use job registry instead ?
+    #     """
+    #     pass
+
     @staticmethod
-    def get_jobfunc():
+    def get_jobclass():
         """
         To be overridden supplying a specific job func.
         TODO: use job registry instead ?
         """
         pass
 
+    def run(self, is_async, request=None):
+        raise Exception('run() must be provided by derived class')
+
+    @classmethod
+    def retrieve_param_names(cls):
+        """
+        List specific parameters of derived task
+        """
+        base_fieldnames = [f.name for f in TaskBase._meta.get_fields()]
+        all_fieldnames = [f.name for f in cls._meta.get_fields()]
+        # fieldnames = [fname for fname in all_fieldnames
+        #     if fname != 'task_ptr' and fname not in base_fieldnames]
+        fieldnames = [fname for fname in all_fieldnames if fname not in base_fieldnames]
+        return fieldnames
+
+    def retrieve_params_as_dict(self):
+        keys = self.retrieve_param_names()
+        return dict([(key, getattr(self, key)) for key in keys])
+
+    def retrieve_params_as_table(self):
+        params = self.retrieve_params_as_dict()
+        html = '<table>' + \
+            '\n'.join(['<tr><td>%s</td><td>%s</td></tr>' % (key, value) for key, value in params.items()]) + \
+            '</table>'
+        return mark_safe(html)
+
+
+# @receiver(models.signals.post_delete, sender=TaskBase)
+# def on_task_delete_cleanup(sender, instance, **kwargs):
+#     """
+#     Autodelete logfile on Task delete
+#     """
+#     logfile = instance._logfile()
+#     if os.path.isfile(logfile):
+#         os.remove(logfile)
+
+
+################################################################################
+# class TaskRQ
+
+class TaskRQ(TaskBase):
+
+    class Meta(TaskBase.Meta):
+        # ordering = ('-created_on', )
+        # get_latest_by = "created_on"
+        abstract = True
+
     def check_worker_active_for_queue(self, queue):
         import rq
+        import redis
         # collect active workers
         workers = rq.Worker.all(connection=redis.Redis.from_url(REDIS_URL))
         # Retrieve active queues;
@@ -522,51 +582,65 @@ class Task(models.Model):
                 self.set_status('REJECTED', failure_reason='No active workers for queue', commit=True)
                 raise TaskError('%s "%s"' % (_('No active workers for queue'), queue.name))
 
-        # Now we accept either a jobfunc or a Job-derived class
-        try:
-            jobfunc_or_class = self.get_jobfunc()
-            if isinstance(jobfunc_or_class, types.FunctionType):
-                jobfunc=jobfunc_or_class
-                job = queue.enqueue(jobfunc, self.id)
-            else:
-                jobclass = jobfunc_or_class
-                #assert isinstance(jobclass, Job):
-                job = queue.enqueue(jobclass.run, task_class=self.__class__, task_id=self.id)
-        except:
-            self.log(logging.ERROR, 'Provide either a function or a class derived from Job')
-            raise
+        # # Now we accept either a jobfunc or a Job-derived class
+        # try:
+        #     jobfunc_or_class = self.get_jobfunc()
+        #     if isinstance(jobfunc_or_class, types.FunctionType):
+        #         jobfunc=jobfunc_or_class
+        #         job = queue.enqueue(jobfunc, self.id)
+        #     else:
+        #         jobclass = jobfunc_or_class
+        #         #assert isinstance(jobclass, Job):
+        #         job = queue.enqueue(jobclass.run, task_class=self.__class__, task_id=self.id)
+        # except:
+        #     self.log(logging.ERROR, 'Provide either a function or a class derived from Job')
+        #     raise
+
+        jobclass = self.get_jobclass()
+        from .job import Job
+        assert issubclass(jobclass, Job)
+        job = queue.enqueue(jobclass.run, task_class=self.__class__, task_id=self.id)
 
         return job
 
-    @classmethod
-    def retrieve_param_names(cls):
-        """
-        List specific parameters of derived task
-        """
-        base_fieldnames = [f.name for f in Task._meta.get_fields()]
-        all_fieldnames = [f.name for f in cls._meta.get_fields()]
-        # fieldnames = [fname for fname in all_fieldnames
-        #     if fname != 'task_ptr' and fname not in base_fieldnames]
-        fieldnames = [fname for fname in all_fieldnames if fname not in base_fieldnames]
-        return fieldnames
-
-    def retrieve_params_as_dict(self):
-        keys = self.retrieve_param_names()
-        return dict([(key, getattr(self, key)) for key in keys])
-
-    def retrieve_params_as_table(self):
-        params = self.retrieve_params_as_dict()
-        html = '<table>' + \
-            '\n'.join(['<tr><td>%s</td><td>%s</td></tr>' % (key, value) for key, value in params.items()]) + \
-            '</table>'
-        return mark_safe(html)
 
 
-@receiver(models.signals.post_delete, sender=Task)
-def on_task_delete_cleanup(sender, instance, **kwargs):
-    """
-    Autodelete logfile on Task delete
-    """
-    logfile = instance._logfile()
-    if os.path.isfile(logfile):
-        os.remove(logfile)
+
+################################################################################
+# class TaskRQ
+
+class TaskThreaded(TaskBase):
+
+    class Meta(TaskBase.Meta):
+        # ordering = ('-created_on', )
+        # get_latest_by = "created_on"
+        abstract = True
+
+    def run(self, is_async, daemon=True, request=None):
+
+        if self.job_id:
+            raise TaskError('already scheduled for execution')
+
+        if ALWAYS_EAGER:
+            is_async = False
+
+        self.mode = 'ASYNC' if is_async else 'SYNC'
+        self.save(update_fields=['mode', ])
+
+        jobclass = self.get_jobclass()
+        from .job import Job
+        assert issubclass(jobclass, Job)
+
+        if is_async:
+
+            # https://stackoverflow.com/questions/17601698/can-django-do-multi-thread-works
+            t = threading.Thread(target=jobclass.run, args=(self.__class__, self.id), daemon=daemon)
+            t.start()
+
+        else:
+
+            jobclass.run(self.__class__, self.id)
+            t = threading.current_thread()
+
+        job = t
+        return job

@@ -1,13 +1,10 @@
-from __future__ import print_function
 import time
-import redis
 import logging
 import traceback
 from django.conf import settings
 from .models import CountBeansTask
 from .models import SendEmailTask
 from django_task.job import Job
-from rq import get_current_job
 
 
 class CountBeansJob(Job):
