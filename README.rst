@@ -11,7 +11,7 @@ django-task
 .. image:: https://codecov.io/gh/morlandi/django-task/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/morlandi/django-task
 
-A Django app to run new background tasks from either admin or cron, and inspect task history from admin; based on django-rq
+A Django app to run new background tasks from either admin or cron, and inspect task history from admin
 
 .. contents::
 
@@ -32,7 +32,7 @@ Quickstart
 
     INSTALLED_APPS = (
         ...
-        'django_rq',
+        'django_rq',  # optional, if using TaskTheaded
         'django_task',
         ...
     )
@@ -47,7 +47,7 @@ Quickstart
         ...
     ]
 
-4) **Configure Redis and RQ in settings.py**; example:
+4) **Configure Redis and RQ in settings.py** (optional, if using TaskTheaded):
 
 .. code-block:: python
 
@@ -234,6 +234,24 @@ or::
     coverage report
 
 
+Threaded vs RQ-based tasks
+--------------------------
+
+The original implementation is based on django-rq and RQ (a Redis based Python queuing library).
+
+On some occasions, using a background queue may be overkill or even inappropriate:
+if you need to run many short I/O-bound background tasks concurrently, the serialization
+provided by the queue, while limiting the usage of resources, would cause eccessive delay.
+
+Starting from version 2.0.0, in those cases you can use TaskThreaded instead of TaskRQ;
+this way, each background task will run in it's own thread.
+
+**MIGRATING FROM django-task 1.5.1 to 2.0.0**
+
+- derive your queue-based tasks from TaskRQ instead of Task
+- or use TaskThreaded
+- get_jobclass() overridable replaces get_jobfunc()
+
 Support Job class
 -----------------
 
@@ -247,68 +265,9 @@ Starting from version 0.3.0, some conveniences have been added:
   that when provided overrides the default queue timeout
 
 - a new Job class has been provided to share suggested common logic before and
-  after jobfunc execution
-
-.. code :: python
-
-    class Job(object):
-
-        @classmethod
-        def run(job_class, task_class, task_id):
-
-            from django_task.job import job_trace
-            from rq import get_current_job
-            from django_task.app_settings import REDIS_URL
-
-            job_trace('job.run() enter')
-            task = None
-            result = 'SUCCESS'
-            failure_reason = ''
-
-            try:
-
-                # this raises a "Could not resolve a Redis connection" exception in sync mode
-                #job = get_current_job()
-                job = get_current_job(connection=redis.Redis.from_url(REDIS_URL))
-
-                # Retrieve task obj and set as Started
-                task = task_class.get_task_from_id(task_id)
-                task.set_status(status='STARTED', job_id=job.get_id())
-
-                # Execute job passing by task
-                job_class.execute(job, task)
-
-            except Exception as e:
-                job_trace('ERROR: %s' % str(e))
-                job_trace(traceback.format_exc())
-
-                if task:
-                    task.log(logging.ERROR, str(e))
-                    task.log(logging.ERROR, traceback.format_exc())
-                result = 'FAILURE'
-                failure_reason = str(e)
-
-            finally:
-                if task:
-                    task.set_status(status=result, failure_reason=failure_reason)
-                try:
-                    job_class.on_complete(job, task)
-                except Exception as e:
-                    job_trace('NESTED ERROR: Job.on_completed() raises error "%s"' % str(e))
-                    job_trace(traceback.format_exc())
-            job_trace('job.run() leave')
-
-        @staticmethod
-        def on_complete(job, task):
-            pass
-
-        @staticmethod
-        def execute(job, task):
-            pass
-
-so you can either override `run()` to implement a different logic,
-or (in most cases) just supply your own `execute()` method, and optionally
-override `on_complete()` to execute cleanup actions after job completion;
+  after jobfunc execution; you can either override `run()` to implement a custom logic,
+  or (in most cases) just supply your own `execute()` method, and optionally
+  override `on_complete()` to execute cleanup actions after job completion;
 
 example:
 
@@ -355,10 +314,10 @@ Run worker(s):
 
     from django.db import models
     from django.conf import settings
-    from django_task.models import Task
+    from django_task.models import TaskRQ
 
 
-    class SendEmailTask(Task):
+    class SendEmailTask(TaskRQ):
 
         sender = models.CharField(max_length=256, null=False, blank=False)
         recipients = models.TextField(null=False, blank=False,
@@ -373,12 +332,20 @@ Run worker(s):
         DEFAULT_VERBOSITY = 2
 
         @staticmethod
-        def get_jobfunc():
+        def get_jobclass():
             from .jobs import SendEmailJob
             return SendEmailJob
 
 You can change the `verbosity` dynamically by overridding the verbosity property:
 
+.. code:: python
+
+    class SendEmailTask(TaskRQ):
+
+        @property
+        def verbosity(self):
+            #return self.DEFAULT_VERBOSITY
+            return 1  # either 0, 1 or 2
 
 When using **LOG_TO_FILE = True**, you might want to add a cleanup handler to
 remove the log file when the corresponding record is deleted::
@@ -395,21 +362,10 @@ remove the log file when the corresponding record is deleted::
         if os.path.isfile(logfile):
             os.remove(logfile)
 
-
-.. code:: python
-
-    class SendEmailTask(Task):
-
-        @property
-        def verbosity(self):
-            #return self.DEFAULT_VERBOSITY
-            return 1  # either 0, 1 or 2
-
 **Sample Job**
 
 .. code:: python
 
-    from __future__ import print_function
     import redis
     import logging
     import traceback
@@ -797,4 +753,5 @@ References:
 - `django-rq redux: advanced techniques and tools <https://spapas.github.io/2015/09/01/django-rq-redux/>`_
 - `Benchmark: Shared vs. Dedicated Redis Instances <https://redislabs.com/blog/benchmark-shared-vs-dedicated-redis-instances/>`_
 - `Django tasty salad - DOs and DON'Ts using Celery by Roberto Rosario <https://speakerdeck.com/siloraptor/django-tasty-salad-dos-and-donts-using-celery>`_
+- `Can Django do multi-thread works? <https://stackoverflow.com/questions/17601698/can-django-do-multi-thread-works#53327191>`_
 

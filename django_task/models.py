@@ -136,50 +136,6 @@ class TaskBase(models.Model):
 
         """
         return get_model_from_id(cls, task_id, timeout, retry_count)
-        # dt = timeout / retry_count
-        # for i in range(retry_count):
-        #     try:
-        #         task = cls.objects.get(id=task_id)
-        #         return task
-        #     except cls.DoesNotExist:
-        #         pass
-        #     time.sleep(dt / 1000.0)
-        # return None
-
-    # def get_child(self):
-    #     """
-    #     Return instance of the derived model from base class.
-
-    #     # Adapted from:
-    #     #   http://lazypython.blogspot.it/2008/12/playing-with-polymorphism-in-django.html
-    #     """
-
-    #     #from django.db.models.fields.reverse_related import OneToOneRel
-    #     from django.db.models.fields.related import OneToOneRel
-    #     child = self
-
-    #     # Fixes for Django 1.10
-    #     # https://docs.djangoproject.com/en/1.9/ref/models/meta/#migrating-from-the-old-api
-    #     # Removed in 1.10 many _meta functions as part of the "formalization of the Model._meta api:
-    #     # - get_all_field_names
-    #     # - get_field_by_name
-
-    #     # for f in self._meta.get_all_field_names():
-    #     #     field = self._meta.get_field_by_name(f)[0]
-    #     #     ...
-    #     for name in [f.name for f in self._meta.get_fields()]:
-    #         field = self._meta.get_field(name)
-    #         if isinstance(field, OneToOneRel) and field.field.primary_key:
-    #             try:
-    #                 child = getattr(self, field.get_accessor_name())
-    #                 break
-    #             except field.model.DoesNotExist:
-    #                 pass
-    #             # TODO: investigate
-    #             # Occasionally receiving RelatedObjectDoesNotExist
-    #             except Exception:
-    #                 pass
-    #     return child
 
     def as_dict(self):
         return {
@@ -633,7 +589,7 @@ class TaskThreaded(TaskBase):
 
         if is_async:
 
-            # https://stackoverflow.com/questions/17601698/can-django-do-multi-thread-works
+            # https://stackoverflow.com/questions/17601698/can-django-do-multi-thread-works#53327191
             t = threading.Thread(target=jobclass.run, args=(self.__class__, self.id), daemon=daemon)
             t.start()
 

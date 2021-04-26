@@ -4,6 +4,15 @@
 History
 =======
 
+2.0.0
+-----
+* Split Task model into TaskBase + TaskRQ
+* Implement TaskThreaded
+* Drop Django1 and Python2.7
+* cleanup
+* Revamped unit tests
+* Simpler queues settings
+
 1.5.1
 -----
 * Moved required imports inside Job.run() so it can be more easily replicated for any needed customization
