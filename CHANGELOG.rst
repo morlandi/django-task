@@ -7,11 +7,9 @@ History
 2.0.0
 -----
 * Split Task model into TaskBase + TaskRQ
-* Implement TaskThreaded
+* Implement TaskThreaded (experimental)
 * Drop Django1 and Python2.7
 * cleanup
-* Revamped unit tests
-* Simpler queues settings
 
 1.5.1
 -----
