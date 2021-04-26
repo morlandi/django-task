@@ -7,7 +7,9 @@ History
 1.5.1
 -----
 * Moved required imports inside Job.run() so it can be more easily replicated for any needed customization
-...
+* Simpler queues settings
+* Revamped unit testing
+* Cleanup
 
 1.5.0
 -----
