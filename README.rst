@@ -32,7 +32,7 @@ Quickstart
 
     INSTALLED_APPS = (
         ...
-        'django_rq',  # optional, if using TaskTheaded
+        'django_rq',  # optional (not needed when using TaskThreaded)
         'django_task',
         ...
     )
@@ -47,7 +47,7 @@ Quickstart
         ...
     ]
 
-4) **Configure Redis and RQ in settings.py** (optional, if using TaskTheaded):
+4) **Configure Redis and RQ in settings.py** (not needed when using TaskThreaded):
 
 .. code-block:: python
 
@@ -147,10 +147,10 @@ Features
 
 **Details**
 
-1. each specific job is described my a Model derived from models.Task, which
+1. each specific task is described by a Model derived from either models.TaskRQ or models.TaskThreaded, which
    is responsible for:
 
-   - selecting the name for the consumer queue among available queues
+   - selecting the name for the consumer queue among available queues (TaskRQ only)
    - collecting and saving all parameters required by the associated job
    - running the specific job asyncronously
 
@@ -438,57 +438,6 @@ A similar generic helper is available for Job-derived needs::
 
     django_task.utils.get_model_from_id(model_cls, id, timeout=1000, retry_count=10)
 
-
-**Howto separate jobs for different instances on the same machine**
-
-To sepatare jobs for different instances on the same machine (or more precisely
-for the same redis connection), override queues names for each instance;
-
-for example:
-
-.. code:: python
-
-    # file "settings.py"
-
-    REDIS_URL = 'redis://localhost:6379/0'
-    ...
-
-    #
-    # RQ config
-    #
-
-    RQ_PREFIX = "myproject_"
-    QUEUE_DEFAULT = RQ_PREFIX + 'default'
-    QUEUE_HIGH = RQ_PREFIX + 'high'
-    QUEUE_LOW = RQ_PREFIX + 'low'
-
-    RQ_QUEUES = {
-        QUEUE_DEFAULT: {
-            'URL': REDIS_URL,
-            #'PASSWORD': 'some-password',
-            'DEFAULT_TIMEOUT': 360,
-        },
-        QUEUE_HIGH: {
-            'URL': REDIS_URL,
-            'DEFAULT_TIMEOUT': 500,
-        },
-        QUEUE_LOW: {
-            'URL': REDIS_URL,
-            #'ASYNC': False,
-        },
-    }
-
-    RQ_SHOW_ADMIN_LINK = False
-    DJANGOTASK_LOG_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', 'protected', 'tasklog'))
-    DJANGOTASK_ALWAYS_EAGER = False
-    DJANGOTASK_JOB_TRACE_ENABLED = False
-    DJANGOTASK_REJECT_IF_NO_WORKER_ACTIVE_FOR_QUEUE = True
-
-then run worker as follows:
-
-.. code:: python
-
-    python manage.py rqworker myproject_default
 
 **Howto schedule jobs with cron**
 
