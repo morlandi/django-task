@@ -209,6 +209,39 @@ REDIS_URL
     Default: 'redis://localhost:6379/0'
 
 
+Verbosity levels
+----------------
+
+The `verbosity level` controls the logging level as follows:
+
+=============== ===================
+verbosity       log level
+--------------- -------------------
+0               no log
+1               logging.WARNING
+2               logging.INFO
+3               logging.DEBUG
+=============== ===================
+
+and can be set by the derived class:
+
+.. code:: python
+
+    class MyTask(TaskRQ):
+        ...
+        DEFAULT_VERBOSITY = 2
+        ...
+
+or you can set it on a "per task" basis by adding to the model
+a `task_verbosity` field as follows:
+
+.. code:: python
+
+    task_verbosity = models.PositiveIntegerField(null=False, blank=False, default=2,
+        choices=((0,'0'), (1,'1'), (2,'2'), (3,'3')),
+    )
+
+
 Running Tests
 -------------
 
@@ -335,17 +368,6 @@ Run worker(s):
         def get_jobclass():
             from .jobs import SendEmailJob
             return SendEmailJob
-
-You can change the `verbosity` dynamically by overridding the verbosity property:
-
-.. code:: python
-
-    class SendEmailTask(TaskRQ):
-
-        @property
-        def verbosity(self):
-            #return self.DEFAULT_VERBOSITY
-            return 1  # either 0, 1 or 2
 
 When using **LOG_TO_FILE = True**, you might want to add a cleanup handler to
 remove the log file when the corresponding record is deleted::

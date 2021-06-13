@@ -47,7 +47,7 @@ class TaskAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_on'
 
     readonly_fields = ['description', 'created_on', 'created_by', 'started_on', 'completed_on', 'job_id',
-        'status', 'failure_reason', 'progress', 'verbosity', 'mode', 'log_text', ]
+        'status', 'failure_reason', 'progress', 'mode', 'log_text', ]
 
     def get_list_display(self, request):
         list_display = self.list_display[:]

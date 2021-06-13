@@ -1,5 +1,5 @@
 
 # Additional requirements go here
-Django==3.2
+Django==3.2.4
 django-rq==2.4.1
 #rq==1.8.0

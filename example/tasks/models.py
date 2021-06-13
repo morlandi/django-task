@@ -9,6 +9,9 @@ from django_task.models import TaskThreaded
 class CountBeansTask(TaskRQ):
 
     num_beans = models.PositiveIntegerField(default=100)
+    task_verbosity = models.PositiveIntegerField(null=False, blank=False, default=2,
+        choices=((0,'0'), (1,'1'), (2,'2'), (3,'3')),
+    )
 
     TASK_QUEUE = settings.QUEUE_DEFAULT
     #TASK_TIMEOUT = 10

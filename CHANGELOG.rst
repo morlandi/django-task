@@ -4,6 +4,11 @@
 History
 =======
 
+2.0.1
+-----
+* optional "per task" verbosity level
+* POSSIBLE INCOMPATIBLE CHANGE: verbosity levels has been shifted (set as documented in the README)
+
 2.0.0
 -----
 * Split Task model into TaskBase + TaskRQ

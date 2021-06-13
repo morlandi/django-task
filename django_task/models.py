@@ -109,6 +109,9 @@ class TaskBase(models.Model):
         choices=TASK_MODE_CHOICES, default=DEFAULT_TASK_MODE_VALUE)
     failure_reason = models.CharField(_('failure reason'), max_length=256, null=False, blank=True)
     log_text = models.TextField(_('log text'), null=False, blank=True)
+    # task_verbosity = models.PositiveIntegerField(_('verbosity'), null=False, blank=False, default=0
+    #     choices=((0,'0'), (1,'1'), (2,'2'), (3,'3')),
+    # )
 
     #
     # To be overridden in derived Task class
@@ -128,6 +131,8 @@ class TaskBase(models.Model):
 
     @property
     def verbosity(self):
+        if hasattr(self, 'task_verbosity'):
+            return getattr(self, 'task_verbosity')
         return self.DEFAULT_VERBOSITY
 
     @classmethod
@@ -392,7 +397,13 @@ class TaskBase(models.Model):
             # http://stackoverflow.com/questions/29712938/python-celery-how-to-separate-log-files#29733606
             logger_name = 'task_logger_' + str(self.id)
             self.logger = logging.getLogger(logger_name)
-            level = logging.DEBUG if verbosity >= 2 else logging.INFO
+            #level = logging.DEBUG if verbosity >= 2 else logging.INFO
+            if verbosity >= 3:
+                level = logging.DEBUG
+            elif verbosity >= 2:
+                level = logging.INFO
+            else:
+                level = logging.WARNING
             self.logger.setLevel(level)
             format_string = '%(asctime)s|%(levelname)s|%(message)s'
 
