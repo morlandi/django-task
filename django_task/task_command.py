@@ -1,4 +1,5 @@
 import distutils
+import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from .models import TaskThreaded
@@ -17,9 +18,19 @@ class TaskCommand(BaseCommand):
     def run_task(self, TaskClass, created_by=None, **options):
         try:
             param_names = TaskClass.retrieve_param_names()
+
+            # If verbosity has been explicitly supplied on the command line,
+            # use it to set task verbosity;
+            # otherwise, keep the default value suggested by the task Model
+            if 'task_verbosity' in param_names:
+                if '-v' in sys.argv or '--verbosity' in sys.argv:
+                    options['task_verbosity'] = options['verbosity']
+
             params = dict([item for item in options.items() if item[0] in param_names])
+
             if created_by is not None:
                 params.update({'created_by': created_by})
+
             task = TaskClass.objects.create(**params)
 
             is_async = not options.get('sync')

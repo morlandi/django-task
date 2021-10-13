@@ -4,6 +4,10 @@
 History
 =======
 
+2.0.2
+-----
+* TaskCommand now uses "-v" / "--verbosity" command line options to set task_verbosity
+
 2.0.1
 -----
 * optional "per task" verbosity level
