@@ -4,6 +4,10 @@
 History
 =======
 
+2.0.3
+-----
+* Prepare for Django 4.0
+
 2.0.2
 -----
 * TaskCommand now uses "-v" / "--verbosity" command line options to set task_verbosity
