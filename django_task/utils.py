@@ -13,10 +13,11 @@ def get_object_by_uuid_or_404(model, uuid_pk):
     Calls get_object_or_404(model, pk=uuid_pk)
     but also prevents "badly formed hexadecimal UUID string" unhandled exception
     """
-    try:
-        uuid.UUID(uuid_pk)
-    except Exception as e:
-        raise Http404(str(e))
+    if isinstance(uuid_pk, str):
+        try:
+            uuid.UUID(uuid_pk)
+        except Exception as e:
+            raise Http404(str(e))
     return get_object_or_404(model, pk=uuid_pk)
 
 

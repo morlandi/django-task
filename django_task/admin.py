@@ -5,10 +5,11 @@ from wsgiref.util import FileWrapper
 from django.http import StreamingHttpResponse
 from django.contrib import admin
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.contrib import messages
-from django.conf.urls import url
+#from django.conf.urls import url
+from django.urls import path
 try:
     from django.urls import reverse
 except:
@@ -139,16 +140,29 @@ class TaskAdmin(admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
         urls = super(TaskAdmin, self).get_urls()
         my_urls = [
-            url(r'^(?P<object_id>[^/]+)/run/$',
+            # url(r'^(?P<object_id>[^/]+)/run/$',
+            #     self.admin_site.admin_view(self.run), {},
+            #     name="%s_%s_run" % info),
+            # url(r'^(?P<object_id>[^/]+)/repeat/$',
+            #     self.admin_site.admin_view(self.repeat), {},
+            #     name="%s_%s_repeat" % info),
+            # url(r'^(?P<object_id>[^/]+)/view-logfile/$',
+            #     self.admin_site.admin_view(self.view_logfile), {},
+            #     name="%s_%s_viewlogfile" % info),
+            # url(r'^(?P<object_id>[^/]+)/view-logtext/$',
+            #     self.admin_site.admin_view(self.view_logtext), {},
+            #     name="%s_%s_viewlogtext" % info),
+
+            path('<uuid:object_id>/run/',
                 self.admin_site.admin_view(self.run), {},
                 name="%s_%s_run" % info),
-            url(r'^(?P<object_id>[^/]+)/repeat/$',
+            path('<uuid:object_id>/repeat/',
                 self.admin_site.admin_view(self.repeat), {},
                 name="%s_%s_repeat" % info),
-            url(r'^(?P<object_id>[^/]+)/view-logfile/$',
+            path('<uuid:object_id>/view-logfile/',
                 self.admin_site.admin_view(self.view_logfile), {},
                 name="%s_%s_viewlogfile" % info),
-            url(r'^(?P<object_id>[^/]+)/view-logtext/$',
+            path('<uuid:object_id>/view-logtext/',
                 self.admin_site.admin_view(self.view_logtext), {},
                 name="%s_%s_viewlogtext" % info),
         ]
