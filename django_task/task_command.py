@@ -16,6 +16,7 @@ class TaskCommand(BaseCommand):
         parser.add_argument('--sync', action="store_true", default=False, help='Run task synchronously')
 
     def run_task(self, TaskClass, created_by=None, **options):
+        task = None
         try:
             param_names = TaskClass.retrieve_param_names()
 
@@ -42,4 +43,5 @@ class TaskCommand(BaseCommand):
             raise CommandError('[%s] ERROR: %s' % (timezone.now().isoformat(), str(e)))
 
         self.stdout.write('[%s] %s scheduled (task=%s)' % (timezone.now().isoformat(), TaskClass.__name__, str(task.id)))
+        return task
 

@@ -4,6 +4,10 @@
 History
 =======
 
+2.0.4
+-----
+* TaskCommand.run_task() now returns the created Task
+
 2.0.3
 -----
 * Prepare for Django 4.0
