@@ -24,7 +24,7 @@ class TaskCommand(BaseCommand):
             # use it to set task verbosity;
             # otherwise, keep the default value suggested by the task Model
             if 'task_verbosity' in param_names:
-                if '-v' in sys.argv or '--verbosity' in sys.argv:
+                if ('-v' in sys.argv or '--verbosity' in sys.argv) and 'verbosity' in options:
                     options['task_verbosity'] = options['verbosity']
 
             params = dict([item for item in options.items() if item[0] in param_names])
@@ -43,5 +43,5 @@ class TaskCommand(BaseCommand):
             raise CommandError('[%s] ERROR: %s' % (timezone.now().isoformat(), str(e)))
 
         self.stdout.write('[%s] %s scheduled (task=%s)' % (timezone.now().isoformat(), TaskClass.__name__, str(task.id)))
-        return task
+        return task.id if task is not None else None
 
