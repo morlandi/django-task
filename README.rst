@@ -241,6 +241,21 @@ a `task_verbosity` field as follows:
         choices=((0,'0'), (1,'1'), (2,'2'), (3,'3')),
     )
 
+In case, when creating a management command you might want to preserve the default
+value provided by the class, or override it if and only if the verbosity option
+has been set by the user:
+
+.. code:: python
+
+    import sys
+
+    def handle(self, *args, **options):
+
+        if '-v' in sys.argv or '--verbosity'in sys.argv:
+            options['task_verbosity'] = options['verbosity']
+
+        self.run_task(MyTask, **options)
+
 
 Running Tests
 -------------
