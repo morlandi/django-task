@@ -284,7 +284,10 @@ class TaskBase(models.Model):
         seconds = self.duration()
         if seconds is None:
             return ''
-        return time.strftime("%H:%M:%S", time.gmtime(seconds))
+        #return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+        # See: https://stackoverflow.com/questions/775049/how-do-i-convert-seconds-to-hours-minutes-and-seconds#31946730
+        return "{:0>8}".format(str(datetime.timedelta(seconds=seconds)))
     duration_display.short_description = _('Duration')
 
     def set_status(self, status, job_id=None, failure_reason=None, commit=True):

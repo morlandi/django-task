@@ -4,6 +4,10 @@
 History
 =======
 
+2.0.6
+-----
+* fix duration_display()
+
 2.0.5
 -----
 * TaskCommand.run_task() now returns the ID of the created Task
