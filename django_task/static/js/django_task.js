@@ -1,4 +1,4 @@
-window.DjangoTask = (function($) {
+function initDjangoTask($) {
 
     $(document).ready(function() {
         var body = $('body');
@@ -108,4 +108,8 @@ window.DjangoTask = (function($) {
         update_tasks: update_tasks
     };
 
-})(jQuery);
+}
+
+window.addEventListener("load", function () {
+  window.DjangoTask = initDjangoTask(window.$ || window.jQuery || window.django.jQuery);
+})
