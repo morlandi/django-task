@@ -4,6 +4,10 @@
 History
 =======
 
+2.0.7
+-----
+* Fix issue with jQuery is not defined; thanks to Alexkiro (https://github.com/alexkiro)
+
 2.0.6
 -----
 * fix duration_display()
