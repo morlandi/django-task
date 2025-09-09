@@ -1,6 +1,4 @@
 from django.urls import path
-# TODO: When dropping support for Django < 2.0, use this instead:
-#from django.urls import path
 
 from django.contrib import admin
 from . import views
