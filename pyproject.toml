@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-task"
+description = "A Django app to run background tasks and inspect task history; based on django-rq"
+dynamic = ["version"]
+authors = [{ name = "Mario Orlandi", email = "morlandi@brainstorm.it" }]
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["django-task", "django", "rq", "background", "tasks"]
+readme = { file = "README.md", content-type = "text/markdown" }
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: Django",
+  # Uncomment once confirmed via CI:
+  # "Framework :: Django :: 3.2",
+  # "Framework :: Django :: 4.2",
+  # "Framework :: Django :: 5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/morlandi/django-task"
+Issues = "https://github.com/morlandi/django-task/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["django_task*"]
+
+[tool.setuptools.package-data]
+django_task = [
+  "static/**/*",
+  "templates/**/*",
+  "locale/**/*",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "django_task.__version__" }
