@@ -4,6 +4,12 @@
 History
 =======
 
+2.1.0
+-----
+* Switch to rq>=2.6.0, django-rq>=3.1
+* tested with Django>=5.2.5
+* cleanup and upgrade codebase
+
 2.0.7
 -----
 * Fix issue with jQuery is not defined; thanks to Alexkiro (https://github.com/alexkiro)
