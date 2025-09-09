@@ -21,10 +21,7 @@ from django.template.defaultfilters import slugify
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 from django.utils import timezone
-try:
-    from django.urls import reverse
-except:
-    from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.dispatch import receiver
 from .exceptions import TaskError
 from .utils import format_datetime

@@ -1,10 +1,10 @@
-coverage==4.3.4
-mock>=1.0.1
-bs4>=0.0.1
-flake8>=2.1.0
-tox>=1.7.0
-codecov>=2.0.0
+coverage
+mock
+bs4
+flake8
+tox
+codecov
 
 
 # Additional test requirements go here
-django-rq==2.4.1
+django-rq>=3.1

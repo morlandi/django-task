@@ -1,6 +1,3 @@
-# -*- coding: utf-8
-from __future__ import unicode_literals, absolute_import
-
 import django
 
 DEBUG = True
@@ -16,7 +13,7 @@ DATABASES = {
     }
 }
 
-ROOT_URLCONF = "tests.urls"
+ROOT_URLCONF = "django_task.tests.urls"
 
 INSTALLED_APPS = [
     "django.contrib.auth",

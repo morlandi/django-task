@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 import json
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
