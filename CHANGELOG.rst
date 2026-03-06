@@ -4,6 +4,15 @@
 History
 =======
 
+
+2.1.2
+-----
+* Resolve RQ v2.7.0 API compatibility issue
+
+2.1.1
+-----
+* Remove import of deprecated (and unused) module distutils
+
 2.1.0
 -----
 * Switch to rq>=2.6.0, django-rq>=3.1

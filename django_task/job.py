@@ -37,7 +37,9 @@ class Job(object):
                 # this raises a "Could not resolve a Redis connection" exception in sync mode
                 #job = get_current_job()
                 job = get_current_job(connection=redis.Redis.from_url(REDIS_URL))
-                job_id = job.get_id()
+                #job_id = job.get_id()
+                # Resolve RQ v2.7.0 API compatibility issue:
+                job_id = getattr(job, "id", None) or job.get_id()
             elif issubclass(task_class, TaskThreaded):
                 import threading
                 job = threading.current_thread()

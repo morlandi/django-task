@@ -234,7 +234,9 @@ class TaskBase(models.Model):
         """
         if isinstance(job, threading.Thread):
             return job.ident
-        return job.get_id()
+        #return job.get_id()
+        # Resolve RQ v2.7.0 API compatibility issue:
+        return getattr(job, "id", None) or job.get_id()
 
     ############################################################################
     # Duration, status and progress management
